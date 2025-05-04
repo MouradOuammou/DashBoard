@@ -1,179 +1,234 @@
-<!--<c-header class="mb-4 d-print-none" position="sticky">-->
-<ng-container>
-  <c-container [fluid]="true" class="border-bottom px-4">
-    <button
-      [cSidebarToggle]="sidebarId()"
-      cHeaderToggler
-      class="btn"
-      toggle="visible"
-      style="margin-inline-start: -14px;"
-      aria-label="Toggle sidebar navigation"
-    >
-      <svg cIcon name="cilMenu" size="lg"></svg>
-    </button>
-    <c-header-nav class="d-none d-md-flex">
-      <c-nav-item>
-        <a cNavLink routerLink="/dashboard" routerLinkActive="active">Dashboard</a>
-      </c-nav-item>
-      <c-nav-item>
-        <a cNavLink routerLink="/users" routerLinkActive="active">Users</a>
-      </c-nav-item>
-      <c-nav-item>
-        <a cNavLink routerLink="/settings" routerLinkActive="active">Settings</a>
-      </c-nav-item>
-    </c-header-nav>
+<!-- Main Header Container -->
+<c-container [fluid]="true" class="border-bottom px-4 bg-white shadow-sm sticky-top header-container">
+  <!-- Sidebar Toggle Button -->
+  <button
+    [cSidebarToggle]="sidebarId()"
+    cHeaderToggler
+    class="btn btn-hover"
+    toggle="visible"
+    style="margin-inline-start: -14px;"
+    aria-label="Toggle sidebar navigation"
+  >
+    <svg cIcon name="cil-menu" size="lg" class="text-primary"></svg>
+  </button>
 
-    <c-header-nav class="d-none d-md-flex ms-auto ">
-      <a cNavLink>
-        <svg cIcon class="my-1" name="cilBell" size="lg"></svg>
+  <!-- Main Navigation -->
+  <c-header-nav class="d-none d-md-flex">
+    <c-nav-item *ngFor="let item of navItems" class="nav-item-hover">
+      <a cNavLink [routerLink]="item.link" routerLinkActive="active" class="d-flex align-items-center py-2">
+        <svg cIcon [name]="item.icon" class="me-2"></svg>
+        <span>{{ item.label }}</span>
       </a>
-      <a cNavLink>
-        <svg cIcon class="my-1" name="cilList" size="lg"></svg>
-      </a>
-      <a cNavLink>
-        <svg cIcon class="my-1" name="cilEnvelopeOpen" size="lg"></svg>
-      </a>
-    </c-header-nav>
+    </c-nav-item>
+  </c-header-nav>
 
-    <c-header-nav class="ms-auto ms-md-0">
-      <div class="nav-item py-1">
-        <div class="vr h-100 mx-2 text-body text-opacity-75"></div>
+  <!-- Notifications and Messages -->
+  <c-header-nav class="d-none d-md-flex ms-auto">
+    <!-- Messages Dropdown -->
+    <c-dropdown placement="bottom-end" variant="nav-item">
+      <button cDropdownToggle class="btn btn-link py-0 px-2 position-relative" aria-label="Messages">
+        <svg cIcon name="cil-envelope-open" size="lg"></svg>
+        <c-badge *ngIf="newMessages.length > 0" class="position-absolute top-0 start-100 translate-middle" color="warning" shape="rounded-pill">
+          {{ newMessages.length }}
+        </c-badge>
+      </button>
+      <div cDropdownMenu class="dropdown-menu-end p-0 messages-dropdown">
+        <div class="p-3 border-bottom bg-light">
+          <h6 class="mb-0">Messages ({{ newMessages.length }})</h6>
+        </div>
+        <div class="list-group list-group-flush">
+          <a *ngFor="let message of newMessages; trackBy: trackByMessage"
+             href="#" class="list-group-item list-group-item-action border-bottom">
+            <div class="d-flex align-items-center">
+              <c-avatar [src]="'./assets/images/avatars/' + message.avatar" [status]="message.status" size="md" class="me-3"></c-avatar>
+              <div class="flex-grow-1">
+                <div class="d-flex justify-content-between">
+                  <h6 class="mb-1">{{ message.from }}</h6>
+                  <small class="text-muted">{{ message.time }}</small>
+                </div>
+                <p class="mb-0 text-truncate" style="max-width: 240px;">{{ message.title }}</p>
+              </div>
+            </div>
+          </a>
+        </div>
+        <div class="p-2 border-top text-center bg-light">
+          <a href="#" class="text-decoration-none small">View all messages</a>
+        </div>
       </div>
-      <ng-container *ngTemplateOutlet="themeDropdown" />
-      <div class="nav-item py-1">
-        <div class="vr h-100 mx-2 text-body text-opacity-75"></div>
+    </c-dropdown>
+
+    <!-- Notifications Dropdown -->
+    <c-dropdown placement="bottom-end" variant="nav-item">
+      <button cDropdownToggle class="btn btn-link py-0 px-2 position-relative" aria-label="Notifications">
+        <svg cIcon name="cil-bell" size="lg"></svg>
+        <c-badge *ngIf="newNotifications.length > 0" class="position-absolute top-0 start-100 translate-middle" color="danger" shape="rounded-pill">
+          {{ newNotifications.length }}
+        </c-badge>
+      </button>
+      <div cDropdownMenu class="dropdown-menu-end p-0 notifications-dropdown">
+        <div class="p-3 border-bottom bg-light">
+          <h6 class="mb-0">Notifications ({{ newNotifications.length }})</h6>
+        </div>
+        <div class="list-group list-group-flush">
+          <a *ngFor="let notification of newNotifications; trackBy: trackByNotification"
+             href="#" class="list-group-item list-group-item-action border-bottom">
+            <div class="d-flex align-items-center">
+              <div class="me-3">
+                <svg cIcon [name]="notification.icon" [ngClass]="'text-' + notification.color" size="lg"></svg>
+              </div>
+              <div class="flex-grow-1">
+                <div class="d-flex justify-content-between">
+                  <h6 class="mb-1">{{ notification.title }}</h6>
+                  <small class="text-muted">{{ notification.time }}</small>
+                </div>
+              </div>
+            </div>
+          </a>
+        </div>
+        <div class="p-2 border-top text-center bg-light">
+          <a href="#" class="text-decoration-none small">View all notifications</a>
+        </div>
       </div>
-    </c-header-nav>
+    </c-dropdown>
 
-    <c-header-nav class="mx-0">
-      <ng-container *ngTemplateOutlet="userDropdown" />
-    </c-header-nav>
+    <!-- Tasks Dropdown -->
+    <c-dropdown placement="bottom-end" variant="nav-item">
+      <button cDropdownToggle class="btn btn-link py-0 px-2 position-relative" aria-label="Tasks">
+        <svg cIcon name="cil-task" size="lg"></svg>
+        <c-badge *ngIf="newTasks.length > 0" class="position-absolute top-0 start-100 translate-middle" color="info" shape="rounded-pill">
+          {{ newTasks.length }}
+        </c-badge>
+      </button>
+      <div cDropdownMenu class="dropdown-menu-end p-0 tasks-dropdown">
+        <div class="p-3 border-bottom bg-light">
+          <h6 class="mb-0">Tasks ({{ newTasks.length }})</h6>
+        </div>
+        <div class="list-group list-group-flush">
+          <a *ngFor="let task of newTasks; trackBy: trackByTask"
+             href="#" class="list-group-item list-group-item-action border-bottom">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>{{ task.title }}</div>
+              <div class="progress" style="width: 100px; height: 6px;">
+                <div class="progress-bar bg-{{ task.color }}" role="progressbar" [style.width]="task.value + '%'"></div>
+              </div>
+            </div>
+          </a>
+        </div>
+        <div class="p-2 border-top text-center bg-light">
+          <a href="#" class="text-decoration-none small">View all tasks</a>
+        </div>
+      </div>
+    </c-dropdown>
+  </c-header-nav>
 
-  </c-container>
-  <c-container [fluid]="true" class="px-4">
-    <c-breadcrumb-router />
-  </c-container>
-</ng-container>
-<!--</c-header>-->
+  <!-- Theme Selector -->
+  <c-header-nav class="ms-auto ms-md-0">
+    <div class="nav-item py-1">
+      <div class="vr h-100 mx-2 text-body text-opacity-75"></div>
+    </div>
+    <ng-container *ngTemplateOutlet="themeDropdown" />
+    <div class="nav-item py-1">
+      <div class="vr h-100 mx-2 text-body text-opacity-75"></div>
+    </div>
+  </c-header-nav>
 
-<ng-template #userDropdown>
-  <c-dropdown [popperOptions]="{ placement: 'bottom-start' }" variant="nav-item">
-    <button [caret]="false" cDropdownToggle class="py-0 pe-0" aria-label="Open user menu">
+  <!-- User Menu -->
+  <c-dropdown [popperOptions]="{ placement: 'bottom-end' }" variant="nav-item">
+    <button cDropdownToggle class="d-flex align-items-center btn btn-link py-0 ps-2 pe-0" aria-label="User menu">
       <c-avatar
-        shape="rounded-1"
-        [size]="'md'"
+        shape="rounded-circle"
+        size="md"
         src="./assets/images/avatars/8.jpg"
         status="success"
-        textColor="primary"
-        alt="User avatar"
+        class="border-2 border-white"
       />
+      <span class="ms-2 d-none d-md-inline text-dark">Admin</span>
+      <svg cIcon name="cil-chevron-bottom" class="ms-1 text-muted" size="sm"></svg>
     </button>
-    <ul cDropdownMenu class="pt-0 w-auto">
+    <ul cDropdownMenu class="dropdown-menu-end pt-0 user-dropdown">
       <li>
-        <h6 cDropdownHeader class="bg-body-secondary text-body-secondary fw-semibold py-2 rounded-top">
-          Account
+        <h6 cDropdownHeader class="bg-light text-dark fw-semibold py-2 rounded-top">
+          <svg cIcon name="cil-user" class="me-2"></svg>
+          My Account
         </h6>
       </li>
       <li>
-        <a cDropdownItem routerLink="">
-          <svg cIcon class="me-2" name="cilBell"></svg>
-          Updates
-          <c-badge class="ms-2 float-end" color="info"> 42</c-badge>
-        </a>
-      </li>
-      <li>
-        <a cDropdownItem routerLink="/apps/email/inbox">
-          <svg cIcon class="me-2" name="cilEnvelopeOpen"></svg>
-          Messages
-          <c-badge class="ms-2 float-end" color="success">
-            42
-          </c-badge>
-        </a>
-      </li>
-      <li>
-        <a cDropdownItem routerLink="">
-          <svg cIcon class="me-2" name="cilTask"></svg>
-          Tasks
-          <c-badge class="ms-2 float-end" color="danger"> 42</c-badge>
-        </a>
-      </li>
-      <li>
-        <a cDropdownItem routerLink="">
-          <svg cIcon class="me-2" name="cilCommentSquare"></svg>
-          Comments
-          <c-badge class="ms-auto" color="warning"> 42</c-badge>
-        </a>
-      </li>
-      <li>
-        <h6 cDropdownHeader class="bg-body-secondary text-body-secondary fw-semibold py-2">
-          Settings
-        </h6>
-      </li>
-      <li></li>
-      <li>
-        <a cDropdownItem routerLink="">
-          <svg cIcon class="me-2" name="cilUser"></svg>
+        <a cDropdownItem routerLink="/profile" class="d-flex align-items-center">
+          <svg cIcon class="me-2" name="cil-user"></svg>
           Profile
         </a>
       </li>
       <li>
-        <a cDropdownItem routerLink="">
-          <svg cIcon class="me-2" name="cilSettings"></svg>
+        <a cDropdownItem routerLink="/settings" class="d-flex align-items-center">
+          <svg cIcon class="me-2" name="cil-settings"></svg>
           Settings
-        </a>
-      </li>
-      <li>
-        <a cDropdownItem routerLink="">
-          <svg cIcon class="me-2" name="cilCreditCard"></svg>
-          Payments
-          <c-badge class="ms-2 float-end" color="secondary">
-            42
-          </c-badge>
-        </a>
-      </li>
-      <li>
-        <a cDropdownItem routerLink="">
-          <svg cIcon class="me-2" name="cilFile"></svg>
-          Projects
-          <c-badge class="ms-2 float-end" color="primary">
-            42
-          </c-badge>
         </a>
       </li>
       <li>
         <hr cDropdownDivider />
       </li>
       <li>
-        <a cDropdownItem routerLink="">
-          <svg cIcon class="me-2" name="cilLockLocked"></svg>
-          Lock Account
+        <h6 cDropdownHeader class="bg-light text-dark fw-semibold py-2">
+          <svg cIcon name="cil-applications-settings" class="me-2"></svg>
+          Modules
+        </h6>
+      </li>
+      <li>
+        <a cDropdownItem routerLink="/analytics" class="d-flex align-items-center">
+          <svg cIcon class="me-2" name="cil-chart-pie"></svg>
+          Analytics
+          <c-badge class="ms-2" color="info">New</c-badge>
         </a>
       </li>
       <li>
-        <a cDropdownItem routerLink="">
-          <svg cIcon class="me-2" name="cilAccountLogout"></svg>
+        <a cDropdownItem routerLink="/predictions" class="d-flex align-items-center">
+          <svg cIcon class="me-2" name="cil-chart-line"></svg>
+          Predictions
+        </a>
+      </li>
+      <li>
+        <a cDropdownItem routerLink="/store" class="d-flex align-items-center">
+          <svg cIcon class="me-2" name="cil-shop"></svg>
+          Store
+        </a>
+      </li>
+      <li>
+        <hr cDropdownDivider />
+      </li>
+      <li>
+        <a cDropdownItem (click)="logout()" class="d-flex align-items-center">
+          <svg cIcon class="me-2" name="cil-account-logout"></svg>
           Logout
         </a>
       </li>
     </ul>
   </c-dropdown>
-</ng-template>
+</c-container>
 
+<!-- Breadcrumb -->
+<c-container [fluid]="true" class="px-4 py-2 bg-light">
+  <c-breadcrumb-router class="m-0" />
+</c-container>
+
+<!-- Theme Dropdown Template -->
 <ng-template #themeDropdown>
   <c-dropdown alignment="end" variant="nav-item">
-    <button [caret]="false" cDropdownToggle aria-label="Open theme picker">
+    <button [caret]="false" cDropdownToggle aria-label="Theme selector" class="btn btn-link py-0 px-2">
       <svg cIcon [name]="icons()" size="lg"></svg>
     </button>
-    <div cDropdownMenu>
+    <div cDropdownMenu class="theme-dropdown">
       @for (mode of colorModes; track mode.name) {
         <button
           (click)="colorMode.set(mode.name)"
-          [active]="colorMode()===mode.name"
+          [active]="colorMode() === mode.name"
           cDropdownItem
           class="d-flex align-items-center"
         >
-          <svg cIcon class="me-2" [name]="mode.icon" size="lg"></svg>
+          <svg cIcon class="me-2" [name]="mode.icon"></svg>
           {{ mode.text }}
+          @if (mode.name === colorMode()) {
+            <svg cIcon name="cil-check" class="ms-2 text-success"></svg>
+          }
         </button>
       }
     </div>
