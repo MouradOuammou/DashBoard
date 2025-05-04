@@ -6,7 +6,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "coreui-free-angular-admin-template": {
+    "Dashboard": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
