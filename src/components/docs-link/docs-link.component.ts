@@ -7,7 +7,6 @@ import { Component, HostBinding, Input, OnInit } from '@angular/core';
 })
 export class DocsLinkComponent implements OnInit {
 
-  @Input() href?: string = 'https://coreui.io/angular/docs/';
   @Input() name?: string;
   @Input() text?: string;
 
@@ -21,7 +20,6 @@ export class DocsLinkComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.href = this.name ? `https://coreui.io/angular/docs/components/${this.name}` : this.href;
   }
 
 }
