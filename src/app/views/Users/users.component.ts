@@ -1,10 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { User } from '../../../models/user.model';
+import { CommonModule } from '@angular/common';
+
 
 @Component({
   selector: 'app-users',
-  imports: [],
+  imports: [CommonModule],
   templateUrl: './users.component.html',
   styleUrl: './users.component.scss'
 })

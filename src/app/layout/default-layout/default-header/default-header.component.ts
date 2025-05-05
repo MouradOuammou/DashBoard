@@ -1,7 +1,7 @@
 import { NgTemplateOutlet, NgFor, NgIf } from '@angular/common';
 import { Component, computed, inject, input } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
-import { AuthService } from '../../../../service/auth.service';
+import { AuthService } from '../../../../service/Authentification/auth.service';
 
 import {
   AvatarComponent,

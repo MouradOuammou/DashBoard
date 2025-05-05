@@ -15,9 +15,10 @@ import {
   InputGroupTextDirective,
   FormControlDirective,
   ButtonDirective,
+
 } from '@coreui/angular';
 import { FormsModule } from '@angular/forms';
-import { AuthService } from '../../../../service/auth.service';
+import { AuthService } from '../../../../service/Authentification/auth.service'
 
 @Component({
   selector: 'app-login',
@@ -40,7 +41,8 @@ import { AuthService } from '../../../../service/auth.service';
     ButtonDirective,
     NgStyle,
     FormsModule,
-    NgIf,  // Add NgIf here
+    NgIf,
+  
   ]
 })
 export class LoginComponent {
