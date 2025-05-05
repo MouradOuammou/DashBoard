@@ -12,22 +12,22 @@ export const navItems: INavData[] = [
   },
   {
     name: 'Analytics',
-    iconComponent: { name: 'cil-chart-pie' },
+    iconComponent: { name: 'cil-graph' },
     children: [
       {
         name: 'Traffic Insights',
         url: '/analytics/traffic-insights',
-        iconComponent: { name: 'cil-people' }
+        iconComponent: { name: 'cil-walk' }
       },
       {
         name: 'Demographics Insights',
         url: '/analytics/demographics-insights',
-        iconComponent: { name: 'cil-user' }
+        iconComponent: { name: 'cil-people' }
       },
       {
         name: 'Inventory Insights',
         url: '/analytics/inventory-insights',
-        iconComponent: { name: 'cil-layers' }
+        iconComponent: { name: 'cil-storage' }
       }
     ]
   },
@@ -38,46 +38,45 @@ export const navItems: INavData[] = [
       {
         name: 'Staff Planning',
         url: '/predictions/staff-planning',
-        iconComponent: { name: 'cil-user-follow' }
+        iconComponent: { name: 'cil-calendar' }
       },
       {
         name: 'Shelf Optimization',
         url: '/predictions/shelf-optimization',
-        iconComponent: { name: 'cil-basket' }
+        iconComponent: { name: 'cil-sort-ascending' }
       }
     ]
   },
   {
     name: 'Store',
-    iconComponent: { name: 'cil-shop' },
+    iconComponent: { name: 'cil-building' },
     children: [
       {
         name: 'Zones',
         url: '/store/zones',
-        iconComponent: { name: 'cil-location-pin' }
+        iconComponent: { name: 'cil-map' }
       },
       {
         name: 'Cameras',
         url: '/store/cameras',
-        iconComponent: { name: 'cil-camera' }
+        iconComponent: { name: 'cil-video ' }
       },
       {
         name: 'Shelves',
         url: '/store/shelves',
-        iconComponent: { name: 'cil-bookmark' }
+        iconComponent: { name: 'cil-library' }
       },
       {
         name: 'Products',
         url: '/store/products',
-        iconComponent: { name: 'cil-tags' }
+        iconComponent: { name: 'cil-inbox' }
       }
     ]
   },
   {
     name: 'Users',
-    iconComponent: { name: 'cil-people' },
+    iconComponent: { name: 'cil-user' },
     url: '/users',
-
   },
   {
     name: 'Settings',
@@ -90,7 +89,7 @@ export const navItems: INavData[] = [
   },
   {
     name: 'Pages',
-    iconComponent: { name: 'cil-star' },
+    iconComponent: { name: 'cil-description' },
     children: [
       {
         name: 'Login',
@@ -105,7 +104,7 @@ export const navItems: INavData[] = [
       {
         name: 'Error 404',
         url: '/404',
-        iconComponent: { name: 'cil-warning' }
+        iconComponent: { name: 'cil-x-circle' }
       },
       {
         name: 'Error 500',
@@ -117,6 +116,6 @@ export const navItems: INavData[] = [
   {
     name: 'Notifications',
     url: '/notifications',
-    iconComponent: { name: 'cil-bell' },
+    iconComponent: { name: 'cil-bell-exclamation' },
   }
 ];
