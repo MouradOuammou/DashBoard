@@ -53,22 +53,22 @@ export const navItems: INavData[] = [
     children: [
       {
         name: 'Zones',
-        url: '/store/zones',
+        url: '/Store/Zones',
         iconComponent: { name: 'cil-map' }
       },
       {
         name: 'Cameras',
-        url: '/store/cameras',
+        url: '/Store/Cameras',
         iconComponent: { name: 'cil-video ' }
       },
       {
-        name: 'Shelves',
-        url: '/store/shelves',
+        name: 'Shelfs',
+        url: '/Store/Shelfs',
         iconComponent: { name: 'cil-library' }
       },
       {
         name: 'Products',
-        url: '/store/products',
+        url: '/Store/Products',
         iconComponent: { name: 'cil-inbox' }
       }
     ]
@@ -76,12 +76,12 @@ export const navItems: INavData[] = [
   {
     name: 'Users',
     iconComponent: { name: 'cil-user' },
-    url: '/users',
+    url: '/Users',
   },
   {
     name: 'Settings',
     iconComponent: { name: 'cil-settings' },
-    url: '/settings'
+    url: '/Settings'
   },
   {
     title: true,
@@ -113,9 +113,4 @@ export const navItems: INavData[] = [
       }
     ]
   },
-  {
-    name: 'Notifications',
-    url: '/notifications',
-    iconComponent: { name: 'cil-bell-exclamation' },
-  }
 ];

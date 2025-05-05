@@ -73,29 +73,29 @@ export const routes: Routes = [
       // Store Routes
       // ==========================
       {
-        path: 'Store/Area',
-        loadComponent: () => import('./views/Store/area/area.component').then(m => m.AreaComponent),
+        path: 'Store/Zones',
+        loadComponent: () => import('./views/Store/Zones/zones.component').then(m => m.ZonesComponent),
         data: {
-          title: 'Store Area'
+          title: 'Store Zones'
         }
       },
       {
         path: 'Store/Cameras',
-        loadComponent: () => import('./views/Store/cameras/cameras.component').then(m => m.CamerasComponent),
+        loadComponent: () => import('./views/Store/Cameras/cameras.component').then(m => m.CamerasComponent),
         data: {
           title: 'Store Cameras'
         }
       },
       {
         path: 'Store/Products',
-        loadComponent: () => import('./views/Store/products/products.component').then(m => m.ProductsComponent),
+        loadComponent: () => import('./views/Store/Products/products.component').then(m => m.ProductsComponent),
         data: {
           title: 'Store Products'
         }
       },
       {
         path: 'Store/Shelfs',
-        loadComponent: () => import('./views/Store/shelfs/shelfs.component').then(m => m.ShelfsComponent),
+        loadComponent: () => import('./views/Store/Shelfs/shelfs.component').then(m => m.ShelfsComponent),
         data: {
           title: 'Store Shelfs'
         }
