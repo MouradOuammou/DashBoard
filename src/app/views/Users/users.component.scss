@@ -1,57 +1,80 @@
-.user-table {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
-  overflow: hidden;
+/* users.component.scss */
+.container-fluid {
+  max-width: 1400px;
+}
 
-  .table-header {
-    background-color: #3f51b5;
-    color: white;
-    th {
-      padding: 12px;
-      font-weight: 600;
-      border-bottom: none;
-    }
+.user-table {
+  font-size: 0.95rem;
+
+  th {
+    font-weight: 600;
+    white-space: nowrap;
   }
 
-  tbody {
-    tr {
-      transition: background-color 0.2s ease;
-
-      &:hover {
-        background-color: rgba(63, 81, 181, 0.1);
-      }
-
-      td {
-        padding: 12px;
-        vertical-align: middle;
-      }
-    }
+  td {
+    vertical-align: middle;
   }
 
   .badge {
     font-size: 0.85rem;
-    padding: 5px 10px;
-    border-radius: 4px;
+    padding: 0.4rem 0.7rem;
+  }
+}
 
-    &.bg-danger {
-      background-color: #dc3545 !important;
-    }
+.table-dark {
+  background-color: #343a40;
+}
 
-    &.bg-success {
-      background-color: #198754 !important;
-    }
+.card {
+  border-radius: 0.5rem;
+  overflow: hidden;
+  border: none;
 
-    &.bg-warning {
-      background-color: #ffc107 !important;
-      color: #212529;
+  .card-body {
+    padding: 0;
+  }
+}
+
+.btn-outline-info, .btn-outline-warning, .btn-outline-danger {
+  &:hover {
+    color: white;
+  }
+}
+
+.pagination {
+  .page-link {
+    color: #343a40;
+
+    &:focus {
+      box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
     }
   }
 
-  .btn {
-    border-radius: 4px;
+  .active .page-link {
+    background-color: #343a40;
+    border-color: #343a40;
+  }
+}
 
-    i {
-      margin-right: 4px;
-    }
+/* Animation pour le chargement */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.table-responsive {
+  animation: fadeIn 0.4s ease-in;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .btn-sm {
+    padding: 0.25rem 0.4rem;
+    font-size: 0.75rem;
+  }
+
+  .text-end {
+    text-align: left !important;
+    margin-top: 1rem;
   }
 }
