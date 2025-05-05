@@ -1,0 +1,34 @@
+{
+  "users": [
+    {
+      "id": "1",
+      "nom": "youssef",
+      "prenom": "Jean-Pierre",
+      "role": "admin"
+    },
+    {
+      "id": "2",
+      "nom": "Martin",
+      "prenom": "Sophie",
+      "role": "utilisateur"
+    },
+    {
+      "id": "3",
+      "nom": "Leroy",
+      "prenom": "Michel",
+      "role": "utilisateur"
+    },
+    {
+      "id": "4",
+      "nom": "Dubois",
+      "prenom": "Marie",
+      "role": "admin"
+    },
+    {
+      "id": "5",
+      "nom": "Petit",
+      "prenom": "Thomas",
+      "role": "utilisateur"
+    }
+  ]
+}

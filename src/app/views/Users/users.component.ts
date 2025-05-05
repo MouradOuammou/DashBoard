@@ -1,21 +1,27 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { User } from '../../../models/user.model';
-import { CommonModule } from '@angular/common';
 
+interface User {
+  id: string;
+  nom: string;
+  prenom: string;
+  role: string;
+}
 
 @Component({
-  selector: 'app-users',
-  imports: [CommonModule],
-  templateUrl: './users.component.html',
-  styleUrl: './users.component.scss'
+  selector: 'app-user-table',
+  templateUrl: './user-table.component.html',
+  styleUrls: ['./user-table.component.scss']
 })
-export class UsersComponent implements OnInit {
+export class UserTableComponent implements OnInit {
   users: User[] = [];
-  loading = true;
+  loading: boolean = true;
   error: string | null = null;
 
-  constructor(private http: HttpClient) {}
+  // Ajout d'une propriété pour basculer entre mock et vrai backend
+  useMockData: boolean = true;
+
+  constructor(private http: HttpClient) { }
 
   ngOnInit(): void {
     this.fetchUsers();
@@ -25,32 +31,39 @@ export class UsersComponent implements OnInit {
     this.loading = true;
     this.error = null;
 
-    this.http.get<User[]>('http://localhost:3000/api/users')
-      .subscribe({
-        next: (data) => {
-          this.users = data;
-          this.loading = false;
-        },
-        error: (err) => {
-          this.error = 'Erreur lors du chargement des utilisateurs';
-          this.loading = false;
-          console.error('Error fetching users:', err);
-        }
-      });
-  }
+    if (this.useMockData) {
+      // Données mockées pour tester sans backend
+      this.users = [
+        { id: '1', nom: 'Dupont', prenom: 'Jean', role: 'ADMIN' },
+        { id: '2', nom: 'Martin', prenom: 'Sophie', role: 'USER' },
+        { id: '3', nom: 'Bernard', prenom: 'Pierre', role: 'MODERATOR' },
+        { id: '4', nom: 'Petit', prenom: 'Marie', role: 'USER' },
+        { id: '5', nom: 'Leroy', prenom: 'Thomas', role: 'ADMIN' }
+      ];
+      this.loading = false;
 
-  // Méthodes pour les actions
-  viewUserDetails(user: User): void {
-    console.log('View user:', user);
-  }
-
-  editUser(user: User): void {
-    console.log('Edit user:', user);
-  }
-
-  deleteUser(user: User): void {
-    if (confirm(`Êtes-vous sûr de vouloir supprimer ${user.prenom} ${user.nom} ?`)) {
-      console.log('Delete user:', user);
+      setTimeout(() => {
+        this.loading = false;
+      }, 500);
+    } else {
+      // Vraie requête HTTP vers le backend
+      this.http.get<User[]>('http://localhost:8084/api/users') 
+        .subscribe({
+          next: (data) => {
+            this.users = data;
+            this.loading = false;
+          },
+          error: (err) => {
+            this.error = 'Erreur lors du chargement des utilisateurs';
+            this.loading = false;
+            console.error('Erreur:', err);
+          }
+        });
     }
+  }
+
+  toggleDataSource(): void {
+    this.useMockData = !this.useMockData;
+    this.fetchUsers();
   }
 }
