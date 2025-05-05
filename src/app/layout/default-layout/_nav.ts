@@ -16,17 +16,17 @@ export const navItems: INavData[] = [
     children: [
       {
         name: 'Traffic Insights',
-        url: '/analytics/traffic-insights',
+        url: '/Analytics/Traffic_Insights',
         iconComponent: { name: 'cil-walk' }
       },
       {
         name: 'Demographics Insights',
-        url: '/analytics/demographics-insights',
+        url: '/Analytics/Demographics_Insights',
         iconComponent: { name: 'cil-people' }
       },
       {
         name: 'Inventory Insights',
-        url: '/analytics/inventory-insights',
+        url: '/Analytics/Inventory_Insights',
         iconComponent: { name: 'cil-storage' }
       }
     ]
@@ -37,12 +37,12 @@ export const navItems: INavData[] = [
     children: [
       {
         name: 'Staff Planning',
-        url: '/predictions/staff-planning',
+        url: '/Predictions/Staff_Planning',
         iconComponent: { name: 'cil-calendar' }
       },
       {
         name: 'Shelf Optimization',
-        url: '/predictions/shelf-optimization',
+        url: '/Predictions/Shelf_Optimization',
         iconComponent: { name: 'cil-sort-ascending' }
       }
     ]
