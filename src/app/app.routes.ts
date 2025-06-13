@@ -73,33 +73,14 @@ export const routes: Routes = [
       // Store Routes
       // ==========================
       {
-        path: 'Store/Zones',
-        loadComponent: () => import('./views/Store/Zones/zones.component').then(m => m.ZonesComponent),
+        path: 'Store',
+        loadComponent: () => import('./views/Stores/store.component').then(m => m.StoreComponent),
         data: {
           title: 'Store Zones'
         }
       },
-      {
-        path: 'Store/Cameras',
-        loadComponent: () => import('./views/Store/Cameras/cameras.component').then(m => m.CamerasComponent),
-        data: {
-          title: 'Store Cameras'
-        }
-      },
-      {
-        path: 'Store/Products',
-        loadComponent: () => import('./views/Store/Products/products.component').then(m => m.ProductsComponent),
-        data: {
-          title: 'Store Products'
-        }
-      },
-      {
-        path: 'Store/Shelfs',
-        loadComponent: () => import('./views/Store/Shelfs/shelfs.component').then(m => m.ShelfsComponent),
-        data: {
-          title: 'Store Shelfs'
-        }
-      },
+
+
 
       // ==========================
       // Users Routes
