@@ -30,21 +30,21 @@
     </div>
 </div>
 
-<div class="card schedule-card">
+<div class="card">
     <div class="card-header" style="background-color: #5856d6; color: #fff;">Business Hours</div>
     <div class="card-body">
         <form>
             <div class="table-responsive">
                 <table class="table table-striped schedule-table align-middle text-center">
                     <thead class="table-light">
-                        <tr>
+                        <tr >
                             <th *ngFor="let day of weekDays">{{ day }}</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
                             <td *ngFor="let day of weekDays; let i = index">
-                                <div class="mb-1">
+                                <div class="mb-1 border-bottom">
                                     <label class="form-label schedule-label">From</label>
                                     <input type="time" class="form-control schedule-time" [value]="schedule[i]?.from">
                                 </div>
