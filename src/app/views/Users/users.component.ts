@@ -359,6 +359,14 @@ export class UsersComponent implements OnInit {
   }
 
   getUserPermissions(user: User): string {
+
     return user.permissions ? user.permissions.join(', ') : 'Aucune permission définie';
   }
+  addModeratorRules(event: Event) {
+  event.preventDefault();
+}
+
+viewAllRoles(event: Event) {
+  event.preventDefault();
+}
 }
