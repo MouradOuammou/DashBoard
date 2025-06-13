@@ -21,9 +21,7 @@
           #cameraId="ngModel"
           required
           placeholder="Ex: CAM001">
-        <div class="error-message" *ngIf="cameraId.invalid && cameraId.touched">
-          L'ID de la caméra est requis
-        </div>
+
       </div>
 
       <div class="form-group">
@@ -88,9 +86,6 @@
           #zoneName="ngModel"
           required
           placeholder="Ex: Entrée principale">
-        <div class="error-message" *ngIf="zoneName.invalid && zoneName.touched">
-          Le nom de la zone est requis
-        </div>
       </div>
 
       <div class="form-group">
