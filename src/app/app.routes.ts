@@ -98,9 +98,9 @@ export const routes: Routes = [
       // ==========================
       {
         path: 'Settings',
-        loadComponent: () => import('./views/Settings/system-configuration.component').then(m => m.SystemConfigurationComponent),
+        loadComponent: () => import('./views/Settings/store-settings.component').then(m => m.StoreSettingsComponent),
         data: {
-          title: 'Settings'
+          title: 'Store Settings'
         }
       }
     ]
