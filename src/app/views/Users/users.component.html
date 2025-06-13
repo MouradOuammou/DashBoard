@@ -21,13 +21,11 @@
       </div>
       <p class="mt-2">Chargement des utilisateurs...</p>
     </div>
-
     <!-- Error message -->
     <div *ngIf="error" class="alert alert-danger">
       <i class="bi bi-exclamation-triangle-fill me-2"></i> {{ error }}
       <button class="btn btn-sm btn-outline-danger ms-3" (click)="fetchUsers()">Réessayer</button>
     </div>
-
     <!-- Card container for table -->
     <div *ngIf="!loading && !error" class="card shadow-sm">
       <div class="card-body p-0">
@@ -175,8 +173,7 @@
           </div>
         </div>
       </div>
-    </div>
-
+    </div>1
     <!-- Modal Détails Utilisateur -->
     <div class="modal fade" id="detailsModal" tabindex="-1" aria-labelledby="detailsModalLabel" aria-hidden="true">
       <div class="modal-dialog">
