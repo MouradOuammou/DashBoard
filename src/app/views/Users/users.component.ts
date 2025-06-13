@@ -9,7 +9,8 @@ interface User {
   prenom: string;
   role: string;
   email: string;
-  phone: string; 
+  phone: string;
+  permissions?: string[]; // Ajout des permissions
 }
 
 declare var bootstrap: any;
@@ -26,6 +27,7 @@ export class UsersComponent implements OnInit {
   loading: boolean = true;
   error: string | null = null;
   useMockData: boolean = true;
+  selectedUserForRules: User | null = null; // Pour gérer les règles
 
   // Pour les modals et formulaires
   userForm!: FormGroup;
@@ -36,6 +38,20 @@ export class UsersComponent implements OnInit {
   deleteModal: any;
   detailsModal: any;
   nextId: number = 8; // Pour générer de nouveaux IDs
+
+  // Définition des règles disponibles
+  adminRules = [
+    'gestion_utilisateurs',
+    'gestion_contenu',
+    'moderation',
+    'configuration_systeme'
+  ];
+
+  userRules = [
+    'lecture_contenu',
+    'creation_contenu',
+    'edition_propre_contenu'
+  ];
 
   constructor(
     private http: HttpClient,
@@ -63,16 +79,48 @@ export class UsersComponent implements OnInit {
     this.error = null;
 
     if (this.useMockData) {
-      // Données mockées plus complètes
+      // Données mockées avec permissions
       this.users = [
-        { id: '1', nom: 'Benali', prenom: 'Hicham', role: 'ADMIN', email: 'hicham.benali@example.com', phone: '+212 612345678' },
-        { id: '2', nom: 'Mourad', prenom: 'Ahmed', role: 'USER', email: 'ahmed.mourad@example.com', phone: '+212 623456789' },
-        { id: '3', nom: 'Walid', prenom: 'Karim', role: 'MODERATOR', email: 'karim.walid@example.com', phone: '+212 634567890' },
-        { id: '4', nom: 'Anas', prenom: 'Mehdi', role: 'USER', email: 'mehdi.anas@example.com', phone: '+212 645678901' },
-        { id: '5', nom: 'Berrada', prenom: 'Youssef', role: 'ADMIN', email: 'youssef.berrada@example.com', phone: '+212 656789012' },
-        { id: '6', nom: 'Essaidi', prenom: 'Amine', role: 'USER', email: 'amine.essaidi@example.com', phone: '+212 667890123' },
-        { id: '7', nom: 'Tazi', prenom: 'Hamza', role: 'USER', email: 'hamza.tazi@example.com', phone: '+212 678901234' },
-        { id: '8', nom: 'Alaoui', prenom: 'Othman', role: 'USER', email: 'othman.alaoui@example.com', phone: '+212 689012345' }
+        {
+          id: '1', nom: 'Benali', prenom: 'Hicham', role: 'ADMIN',
+          email: 'hicham.benali@example.com', phone: '+212 612345678',
+          permissions: this.adminRules
+        },
+        {
+          id: '2', nom: 'Mourad', prenom: 'Ahmed', role: 'USER',
+          email: 'ahmed.mourad@example.com', phone: '+212 623456789',
+          permissions: this.userRules
+        },
+        {
+          id: '3', nom: 'Walid', prenom: 'Karim', role: 'MODERATOR',
+          email: 'karim.walid@example.com', phone: '+212 634567890',
+          permissions: [...this.adminRules, ...this.userRules]
+        },
+        {
+          id: '4', nom: 'Anas', prenom: 'Mehdi', role: 'USER',
+          email: 'mehdi.anas@example.com', phone: '+212 645678901',
+          permissions: this.userRules
+        },
+        {
+          id: '5', nom: 'Berrada', prenom: 'Youssef', role: 'ADMIN',
+          email: 'youssef.berrada@example.com', phone: '+212 656789012',
+          permissions: this.adminRules
+        },
+        {
+          id: '6', nom: 'Essaidi', prenom: 'Amine', role: 'USER',
+          email: 'amine.essaidi@example.com', phone: '+212 667890123',
+          permissions: this.userRules
+        },
+        {
+          id: '7', nom: 'Tazi', prenom: 'Hamza', role: 'USER',
+          email: 'hamza.tazi@example.com', phone: '+212 678901234',
+          permissions: this.userRules
+        },
+        {
+          id: '8', nom: 'Alaoui', prenom: 'Othman', role: 'USER',
+          email: 'othman.alaoui@example.com', phone: '+212 689012345',
+          permissions: this.userRules
+        }
       ];
       // Simule un délai de chargement
       setTimeout(() => {
@@ -144,7 +192,6 @@ export class UsersComponent implements OnInit {
 
     // Ouvrir le modal de confirmation de suppression
     this.deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
-    this.deleteModal.hide();
     this.deleteModal.show();
   }
 
@@ -206,7 +253,8 @@ export class UsersComponent implements OnInit {
       // Ajout d'un nouvel utilisateur
       const newUser: User = {
         ...userData,
-        id: this.useMockData ? (this.nextId++).toString() : ''
+        id: this.useMockData ? (this.nextId++).toString() : '',
+        permissions: userData.role === 'ADMIN' ? this.adminRules : this.userRules
       };
 
       if (this.useMockData) {
@@ -232,8 +280,85 @@ export class UsersComponent implements OnInit {
   // Formatage du numéro de téléphone pour l'affichage
   formatPhoneNumber(phone: string): string {
     if (!phone) return '-';
-
-    // Garder le format tel quel pour l'instant
     return phone;
+  }
+
+  // Méthodes pour gérer les règles
+  openAddRulesModal(user: User): void {
+    this.selectedUserForRules = {...user};
+    const rulesModal = new bootstrap.Modal(document.getElementById('rulesModal'));
+    rulesModal.show();
+  }
+
+  addAdminRules(event: Event): void {
+    event.preventDefault();
+    if (!this.selectedUserForRules) return;
+
+    if (confirm(`Ajouter les règles Admin à ${this.selectedUserForRules.prenom} ${this.selectedUserForRules.nom}?`)) {
+      if (this.useMockData) {
+        // Mise à jour locale
+        const user = this.users.find(u => u.id === this.selectedUserForRules?.id);
+        if (user) {
+          user.role = 'ADMIN';
+          user.permissions = [...this.adminRules];
+        }
+      } else {
+        // Appel API
+        this.http.patch<User>(`http://localhost:8080/api/users/${this.selectedUserForRules.id}/permissions`, {
+          role: 'ADMIN',
+          permissions: this.adminRules
+        }).subscribe({
+          next: (updatedUser) => {
+            const index = this.users.findIndex(u => u.id === updatedUser.id);
+            if (index !== -1) {
+              this.users[index] = updatedUser;
+            }
+          },
+          error: (err) => {
+            console.error('Erreur lors de la mise à jour des règles:', err);
+            this.error = 'Erreur lors de l\'ajout des règles Admin';
+          }
+        });
+      }
+    }
+    this.selectedUserForRules = null;
+  }
+
+  addUserRules(event: Event): void {
+    event.preventDefault();
+    if (!this.selectedUserForRules) return;
+
+    if (confirm(`Ajouter les règles User à ${this.selectedUserForRules.prenom} ${this.selectedUserForRules.nom}?`)) {
+      if (this.useMockData) {
+        // Mise à jour locale
+        const user = this.users.find(u => u.id === this.selectedUserForRules?.id);
+        if (user) {
+          user.role = 'USER';
+          user.permissions = [...this.userRules];
+        }
+      } else {
+        // Appel API
+        this.http.patch<User>(`http://localhost:8080/api/users/${this.selectedUserForRules.id}/permissions`, {
+          role: 'USER',
+          permissions: this.userRules
+        }).subscribe({
+          next: (updatedUser) => {
+            const index = this.users.findIndex(u => u.id === updatedUser.id);
+            if (index !== -1) {
+              this.users[index] = updatedUser;
+            }
+          },
+          error: (err) => {
+            console.error('Erreur lors de la mise à jour des règles:', err);
+            this.error = 'Erreur lors de l\'ajout des règles User';
+          }
+        });
+      }
+    }
+    this.selectedUserForRules = null;
+  }
+
+  getUserPermissions(user: User): string {
+    return user.permissions ? user.permissions.join(', ') : 'Aucune permission définie';
   }
 }
