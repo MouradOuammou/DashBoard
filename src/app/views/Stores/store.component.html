@@ -1,1 +1,106 @@
-<p>store works!</p>
+<div class="store-map-container">
+  <!-- En-tête avec le titre -->
+  <div class="header">
+    <h2>🗺️ STORE MAP</h2>
+    <div class="camera-counter">
+      <span>Caméras actives: {{ getCameraCount() }}</span>
+    </div>
+  </div>
+
+  <!-- Zone des caméras disponibles -->
+  <div class="cameras-section">
+    <h3>📹 Caméras Disponibles</h3>
+    <div class="cameras-container">
+      @for (camera of availableCameras; track camera.id) {
+        <div
+          class="camera-item"
+          [class.camera-active]="camera.isActive"
+          [class.camera-dragging]="draggedCamera?.id === camera.id"
+          draggable="true"
+          (dragstart)="onDragStart($event, camera)"
+          (dragend)="onDragEnd($event)"
+        >
+          <span class="camera-icon">{{ camera.icon }}</span>
+          <span class="camera-name">{{ camera.name }}</span>
+          <span class="camera-status" [class.status-active]="camera.isActive">
+            {{ camera.isActive ? '🟢' : '🔴' }}
+          </span>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Zone de la carte du magasin -->
+  <div class="store-map">
+    <div class="map-container">
+      <!-- Zones du magasin -->
+      @for (zone of zones; track zone.id) {
+        <div
+          class="zone"
+          [style.position]="'absolute'"
+          [style.left.px]="zone.position.x"
+          [style.top.px]="zone.position.y"
+          [style.width.px]="zone.position.width"
+          [style.height.px]="zone.position.height"
+          [style.background-color]="zone.color"
+          [style.border]="'2px solid #2196F3'"
+          [style.border-radius]="'12px'"
+          (dragover)="onDragOver($event)"
+          (drop)="onDrop($event, zone)"
+        >
+          <!-- Nom de la zone -->
+          <div class="zone-header">
+            <h4>{{ zone.name }}</h4>
+            <span class="camera-count-badge">{{ zone.cameras.length }}</span>
+          </div>
+
+          <!-- Caméras dans la zone -->
+          <div class="zone-cameras">
+            @for (camera of zone.cameras; track camera.id) {
+              <div
+                class="zone-camera"
+                (click)="onCameraClick(camera)"
+              >
+                <span class="zone-camera-icon">{{ camera.icon }}</span>
+                <span class="zone-camera-name">{{ camera.name }}</span>
+                <button
+                  class="remove-camera-btn"
+                  (click)="removeCameraFromZone(camera, zone); $event.stopPropagation()"
+                  title="Retirer la caméra"
+                >
+                  ❌
+                </button>
+              </div>
+            }
+          </div>
+
+          <!-- Indicateur de zone de dépôt -->
+          <div class="drop-zone-indicator" [class.drop-zone-active]="isDragging">
+            <span>📹 Glissez une caméra ici</span>
+          </div>
+        </div>
+      }
+
+      <!-- Entrée du magasin -->
+      <div class="entrance">
+        <h4>🚪 Entrance</h4>
+      </div>
+    </div>
+  </div>
+
+  <!-- Légende -->
+  <div class="legend">
+    <div class="legend-item">
+      <span class="legend-icon">🔴</span>
+      <span>Caméra disponible</span>
+    </div>
+    <div class="legend-item">
+      <span class="legend-icon">🟢</span>
+      <span>Caméra assignée</span>
+    </div>
+    <div class="legend-item">
+      <span class="legend-icon">📹</span>
+      <span>Cliquez sur une caméra pour voir sa zone</span>
+    </div>
+  </div>
+</div>
