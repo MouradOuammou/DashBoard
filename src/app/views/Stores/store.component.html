@@ -1,230 +1,211 @@
-<div class="store-map-container">
-  <!-- En-tête avec le titre -->
-  <div class="header">
-    <h2>🗺️ STORE MAP</h2>
-    <div class="camera-counter">
-      <span>Caméras actives: {{ getCameraCount() }}</span>
+<!-- Camera and Zone List -->
+<div class="d-flex flex-row gap-4 mb-4" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+  <!-- Camera List -->
+  <div class="bg-white p-3 rounded shadow-sm" style="width: 100%;">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <h5 class="mb-0">Cameras</h5>
+      <button class="btn btn-primary btn-sm" (click)="openCameraDialog()">
+        <i class="fas fa-plus"></i> Add Camera
+      </button>
+    </div>
+    <div class="cameras-items"
+      style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 0.75rem;">
+      <div *ngFor="let camera of availableCameras"
+        class="camera-item d-flex align-items-center p-1 bg-light rounded shadow-sm" [draggable]="true"
+        (dragstart)="onDragStart($event, camera)" (dragend)="onDragEnd($event)" style="min-width: 0;">
+        <i class="bi bi-camera-fill me-2 text-primary"></i>
+        <span class="camera-name flex-fill">{{ camera.cameraName }}</span>
+        <span class="camera-dot ms-2" [ngClass]="{
+          'dot-green': camera.status === 'ACTIVE',
+          'dot-yellow': camera.status === 'MAINTENANCE',
+          'dot-red': camera.status === 'INACTIVE'
+        }">●</span>
+      </div>
     </div>
   </div>
 
-  <!-- Formulaire d'ajout de caméra -->
-  <div class="add-camera-form" *ngIf="!showZoneForm">
-    <h3>Ajouter une caméra</h3>
-    <form #cameraForm="ngForm" (ngSubmit)="addCamera()">
-      <div class="form-group">
-        <label for="cameraId">ID de la caméra</label>
-        <input
-          type="text"
-          id="cameraId"
-          name="cameraId"
-          [(ngModel)]="newCamera.id"
-          #cameraId="ngModel"
-          required
-          placeholder="Ex: CAM001">
-
-      </div>
-
-      <div class="form-group">
-        <label for="cameraName">Nom de la caméra</label>
-        <input
-          type="text"
-          id="cameraName"
-          name="cameraName"
-          [(ngModel)]="newCamera.name"
-          #cameraName="ngModel"
-          required
-          placeholder="Ex: Caméra d'entrée">
-        <div class="error-message" *ngIf="cameraName.invalid && cameraName.touched">
-          Le nom de la caméra est requis
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label for="cameraIcon">Icône</label>
-        <select
-          id="cameraIcon"
-          name="cameraIcon"
-          [(ngModel)]="newCamera.icon">
-          <option value="fas fa-video">Caméra standard</option>
-          <option value="fas fa-cctv">Caméra de surveillance</option>
-          <option value="fas fa-camera">Caméra photo</option>
-        </select>
-      </div>
-
-      <button type="submit" class="add-button" [disabled]="!cameraForm.form.valid">
-        <i class="fas fa-plus"></i> Ajouter la caméra
+  <!-- Zone List -->
+  <div class="bg-white p-3 rounded shadow-sm" style="width: 100%;">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <h5 class="mb-0">Zones</h5>
+      <button class="btn btn-primary btn-sm" (click)="openZoneDialog()">
+        <i class="fas fa-plus"></i> Add Zone
       </button>
-    </form>
-  </div>
-
-  <!-- Formulaire d'ajout de zone -->
-  <div class="add-zone-form" *ngIf="showZoneForm">
-    <h3>Ajouter une zone</h3>
-    <form #zoneForm="ngForm" (ngSubmit)="addZone()">
-      <div class="form-group">
-        <label for="zoneId">ID de la zone</label>
-        <input
-          type="text"
-          id="zoneId"
-          name="zoneId"
-          [(ngModel)]="newZone.id"
-          #zoneId="ngModel"
-          required
-          placeholder="Ex: ZONE001">
-        <div class="error-message" *ngIf="zoneId.invalid && zoneId.touched">
-          L'ID de la zone est requis
+    </div>
+    <div class="zone-items"
+      style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 0.75rem;">
+      <ng-container *ngFor="let zone of zones">
+        <div *ngIf="!zone.isActive"
+          class="zone-item d-flex align-items-center p-1 bg-light rounded shadow-sm zone-inactive" [draggable]="true"
+          (dragstart)="onZoneDragStart($event, zone)" (dragend)="onZoneDragEnd($event, zone)"
+          [attr.title]="'Drag to map'" style="min-width: 0; opacity: 1; cursor: grab;">
+          <span class="zone-dot me-2 dot-red">●</span>
+          <span class="zone-name flex-fill">{{ zone.zoneName }}</span>
+          <button class="btn btn-outline-danger btn-sm ms-2 py-0 px-1" style="font-size: 0.9em; line-height: 1;"
+            (click)="removeZoneFromMap(zone.id)" [disabled]="true" [attr.title]="'Zone not on map'">&times;</button>
         </div>
-      </div>
-
-      <div class="form-group">
-        <label for="zoneName">Nom de la zone</label>
-        <input
-          type="text"
-          id="zoneName"
-          name="zoneName"
-          [(ngModel)]="newZone.name"
-          #zoneName="ngModel"
-          required
-          placeholder="Ex: Entrée principale">
-      </div>
-
-      <div class="form-group">
-        <label for="zoneColor">Couleur</label>
-        <input
-          type="color"
-          id="zoneColor"
-          name="zoneColor"
-          [(ngModel)]="newZone.color">
-      </div>
-
-      <button type="submit" class="add-button" [disabled]="!zoneForm.form.valid">
-        <i class="fas fa-plus"></i> Ajouter la zone
-      </button>
-    </form>
-  </div>
-
-  <!-- Boutons de basculement -->
-  <div class="toggle-buttons">
-    <button
-      class="toggle-button"
-      [class.active]="!showZoneForm"
-      (click)="showZoneForm = false">
-      <i class="fas fa-video"></i> Ajouter une caméra
-    </button>
-    <button
-      class="toggle-button"
-      [class.active]="showZoneForm"
-      (click)="showZoneForm = true">
-      <i class="fas fa-map-marked-alt"></i> Ajouter une zone
-    </button>
-  </div>
-
-  <!-- Zone des caméras disponibles -->
-  <div class="cameras-section">
-    <h3>📹 Caméras Disponibles</h3>
-    <div class="cameras-container">
-      @for (camera of availableCameras; track camera.id) {
-        <div
-          class="camera-item"
-          [class.camera-active]="camera.isActive"
-          [class.camera-dragging]="draggedCamera?.id === camera.id"
-          draggable="true"
-          (dragstart)="onDragStart($event, camera)"
-          (dragend)="onDragEnd($event)"
-        >
-          <span class="camera-icon">{{ camera.icon }}</span>
-          <span class="camera-name">{{ camera.name }}</span>
-          <span class="camera-status" [class.status-active]="camera.isActive">
-            {{ camera.isActive ? '🟢' : '🔴' }}
-          </span>
-          <button class="remove-btn" (click)="removeCamera(camera.id)">❌</button>
+        <div *ngIf="zone.isActive"
+          class="zone-item d-flex align-items-center p-2 bg-light rounded shadow-sm zone-active" [draggable]="false"
+          [attr.title]="'Zone is already on the map'" style="min-width: 0; opacity: 0.5; cursor: not-allowed;">
+          <span class="zone-dot me-2 dot-green">●</span>
+          <span class="zone-name flex-fill">{{ zone.zoneName }}</span>
+          <button class="btn btn-outline-danger btn-sm ms-2 py-0 px-1" style="font-size: 0.9em; line-height: 1;"
+            (click)="removeZoneFromMap(zone.id)" [disabled]="false" [attr.title]="'Remove from map'">&times;</button>
         </div>
-      }
+      </ng-container>
     </div>
   </div>
+</div>
 
-  <!-- Zone de la carte du magasin -->
+<!-- Store Map Area -->
+<div class="store-map-container bg-white p-4 rounded shadow-sm">
   <div class="store-map">
-    <div class="map-container"
-         (dragover)="onMapDragOver($event)"
-         (drop)="onMapDrop($event)">
-      <!-- Afficher les zones si elles existent -->
-      <div class="zone"
-           *ngFor="let zone of zones"
-           [style.left.px]="zone.position.x"
-           [style.top.px]="zone.position.y"
-           [style.width.px]="zone.position.width"
-           [style.height.px]="zone.position.height"
-           [style.background-color]="zone.color"
-           draggable="true"
-           (dragstart)="onZoneDragStart($event, zone)"
-           (dragend)="onZoneDragEnd($event)"
-           [class.resizing]="isZoneResizing(zone)">
-        <div class="zone-header">
-          <span class="zone-name">{{ zone.name }}</span>
-          <div class="zone-actions">
-            <button class="action-button" (click)="onZoneClick(zone)">
-              <i class="fas fa-cog"></i>
-            </button>
-            <button class="action-button" (click)="removeZone(zone.id)">
-              <i class="fas fa-trash"></i>
-            </button>
+    <div class="map-container" (dragover)="onMapDragOver($event)" (drop)="onMapDrop($event)">
+      <!-- Zones on the map -->
+      <ng-container *ngFor="let zone of zones">
+        <div class="zone" [style.left.px]="zone.position.x" [style.top.px]="zone.position.y"
+          [style.width.px]="zone.position.width" [style.height.px]="zone.position.height"
+          [style.background-color]="zone.color" [class.resizing]="isZoneResizing(zone)"
+          (mousedown)="onZoneMouseDown($event, zone)" *ngIf="zone.isActive">
+          <div class="zone-header d-flex align-items-center justify-content-between">
+            <span class="zone-dot me-2" [ngClass]="{'dot-green': zone.isActive, 'dot-red': !zone.isActive}">●</span>
+            <span class="zone-name flex-fill">{{ zone.zoneName }}</span>
+            <button class="btn btn-outline-danger btn-sm ms-2 py-0 px-1" style="font-size: 0.9em; line-height: 1;"
+              (click)="removeZoneFromMap(zone.id)">&times;</button>
           </div>
-        </div>
-        <div class="zone-content">
-          <div class="drop-zone-indicator" *ngIf="zone.cameras.length === 0">
-            <i class="fas fa-camera"></i>
-            <span>Glissez une caméra ici</span>
-          </div>
-          <div class="camera-list">
-            <div class="camera-item" *ngFor="let camera of zone.cameras">
-              <i [class]="camera.icon"></i>
-              <span>{{ camera.name }}</span>
-              <button class="remove-camera" (click)="removeCameraFromZone(camera.id, zone.id)">
-                <i class="fas fa-times"></i>
-              </button>
+          <div class="zone-content">
+            <div class="drop-zone-indicator" *ngIf="zone.cameras.length === 0">
+              <i class="fas fa-camera"></i>
+              <span>Drop camera here</span>
+            </div>
+            <div class="camera-list">
+              <div class="camera-item d-flex align-items-center" *ngFor="let camera of zone.cameras">
+                <i class="bi bi-camera-fill me-2 text-primary"></i>
+                <span class="camera-name flex-fill">{{ camera.cameraName }}</span>
+                <span class="camera-dot ms-2" [ngClass]="{
+                  'dot-green': camera.status === 'ACTIVE',
+                  'dot-yellow': camera.status === 'MAINTENANCE',
+                  'dot-red': camera.status === 'INACTIVE'
+                }">●</span>
+                <button class="btn btn-outline-danger btn-sm ms-2 py-0 px-1" style="font-size: 0.9em; line-height: 1;"
+                  (click)="removeCameraFromZone(camera.id, zone.id)">&times;</button>
+              </div>
             </div>
           </div>
+          <!-- Resize handles -->
+          <div class="resize-handle resize-handle-e" (mousedown)="onZoneResizeStart($event, zone, 'e')"></div>
+          <div class="resize-handle resize-handle-s" (mousedown)="onZoneResizeStart($event, zone, 's')"></div>
+          <div class="resize-handle resize-handle-se" (mousedown)="onZoneResizeStart($event, zone, 'se')"></div>
         </div>
-        <!-- Poignées de redimensionnement -->
-        <div class="resize-handle resize-handle-e"
-             (mousedown)="onZoneResizeStart($event, zone, 'e')"
-             [ngStyle]="getResizeHandleStyle('e')"></div>
-        <div class="resize-handle resize-handle-s"
-             (mousedown)="onZoneResizeStart($event, zone, 's')"
-             [ngStyle]="getResizeHandleStyle('s')"></div>
-        <div class="resize-handle resize-handle-se"
-             (mousedown)="onZoneResizeStart($event, zone, 'se')"
-             [ngStyle]="getResizeHandleStyle('se')"></div>
-      </div>
+      </ng-container>
 
-      <!-- Afficher le message initial uniquement s'il n'y a pas de zones -->
-      <div class="initial-message" *ngIf="zones.length === 0">
+      <!-- Empty state message -->
+      <div class="initial-message text-center" *ngIf="zones.length === 0">
         <i class="fas fa-map-marked-alt"></i>
-        <h3>Commencez à créer votre plan</h3>
-        <p>Ajoutez des zones pour organiser vos caméras</p>
+        <h3>Start Building Your Map</h3>
+        <p>Add zones to organize your cameras</p>
       </div>
-    </div>
-
-    <!-- Entrée du magasin -->
-    <div class="entrance">
-      <h4>🚪 Entrance</h4>
     </div>
   </div>
+</div>
 
-  <!-- Légende -->
-  <div class="legend">
-    <div class="legend-item">
-      <span class="legend-icon">🔴</span>
-      <span>Caméra disponible</span>
+<!-- Camera Dialog -->
+<div class="modal fade show" tabindex="-1"
+  [ngStyle]="{display: showCameraDialog ? 'block' : 'none', background: 'rgba(0,0,0,0.3)'}" *ngIf="showCameraDialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add Camera</h5>
+        <button type="button" class="btn-close" (click)="closeCameraDialog()"></button>
+      </div>
+      <div class="modal-body">
+        <form #cameraForm="ngForm" (ngSubmit)="addCamera()">
+          <div class="form-group mb-2">
+            <label>ID</label>
+            <input type="text" class="form-control" [(ngModel)]="newCamera.id" name="id" required>
+          </div>
+          <div class="form-group mb-2">
+            <label>Camera Name</label>
+            <input type="text" class="form-control" [(ngModel)]="newCamera.cameraName" name="cameraName" required>
+          </div>
+          <div class="form-group mb-2">
+            <label>Resolution Width</label>
+            <input type="number" class="form-control" [(ngModel)]="newCamera.resolutionWidth" name="resolutionWidth"
+              required>
+          </div>
+          <div class="form-group mb-2">
+            <label>Resolution Height</label>
+            <input type="number" class="form-control" [(ngModel)]="newCamera.resolutionHeight" name="resolutionHeight"
+              required>
+          </div>
+          <div class="form-group mb-2">
+            <label>Stream URL</label>
+            <input type="text" class="form-control" [(ngModel)]="newCamera.streamUrl" name="streamUrl">
+          </div>
+          <div class="form-group mb-2">
+            <label>Status</label>
+            <select class="form-select" [(ngModel)]="newCamera.status" name="status">
+              <option value="ACTIVE">Active</option>
+              <option value="INACTIVE">Inactive</option>
+              <option value="MAINTENANCE">Maintenance</option>
+            </select>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" (click)="closeCameraDialog()">Cancel</button>
+            <button type="submit" class="btn btn-primary">Add Camera</button>
+          </div>
+        </form>
+      </div>
     </div>
-    <div class="legend-item">
-      <span class="legend-icon">🟢</span>
-      <span>Caméra assignée</span>
-    </div>
-    <div class="legend-item">
-      <span class="legend-icon">📹</span>
-      <span>Cliquez sur une caméra pour voir sa zone</span>
+  </div>
+</div>
+
+<!-- Zone Dialog -->
+<div class="modal fade show" tabindex="-1"
+  [ngStyle]="{display: showZoneDialog ? 'block' : 'none', background: 'rgba(0,0,0,0.3)'}" *ngIf="showZoneDialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add Zone</h5>
+        <button type="button" class="btn-close" (click)="closeZoneDialog()"></button>
+      </div>
+      <div class="modal-body">
+        <form #zoneForm="ngForm" (ngSubmit)="addZone()">
+          <div class="form-group mb-2">
+            <label>ID</label>
+            <input type="text" class="form-control" [(ngModel)]="newZone.id" name="id" required>
+          </div>
+          <div class="form-group mb-2">
+            <label>Zone Name</label>
+            <input type="text" class="form-control" [(ngModel)]="newZone.zoneName" name="zoneName" required>
+          </div>
+          <div class="form-group mb-2">
+            <label>Zone Type</label>
+            <select class="form-select" [(ngModel)]="newZone.zoneType" name="zoneType">
+              <option value="PRODUCT">Product</option>
+              <option value="CHECKOUT">Checkout</option>
+              <option value="ENTRANCE">Entrance</option>
+              <option value="CORRIDOR">Corridor</option>
+            </select>
+          </div>
+          <div class="form-group mb-2">
+            <label>Min Dwell Time</label>
+            <input type="number" class="form-control" [(ngModel)]="newZone.minDwellTime" name="minDwellTime" required>
+          </div>
+          <div class="form-group mb-2">
+            <label>Active</label>
+            <input type="checkbox" class="form-check-input" [(ngModel)]="newZone.isActive" name="isActive">
+          </div>
+          <div class="form-group mb-2">
+            <label>Color</label>
+            <input type="color" class="form-control form-control-color" [(ngModel)]="newZone.color" name="color">
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" (click)="closeZoneDialog()">Cancel</button>
+            <button type="submit" class="btn btn-primary">Add Zone</button>
+          </div>
+        </form>
+      </div>
     </div>
   </div>
 </div>

@@ -96,13 +96,14 @@ export const routes: Routes = [
       // ==========================
       // Settings Routes
       // ==========================
-      {//test
+      {
         path: 'Settings',
         loadComponent: () => import('./views/Settings/store-settings.component').then(m => m.StoreSettingsComponent),
         data: {
           title: 'Store Settings'
         }
       }
+
     ]
   },
   {

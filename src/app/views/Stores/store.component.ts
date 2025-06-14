@@ -1,17 +1,24 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 interface Camera {
   id: string;
-  name: string;
-  icon: string;
-  isActive: boolean;
+  cameraName: string;
+  resolutionWidth: number;
+  resolutionHeight: number;
+  streamUrl: string;
+  status: 'ACTIVE' | 'INACTIVE' | 'MAINTENANCE';
+  icon?: string;
+  isActive?: boolean;
 }
 
 interface Zone {
   id: string;
-  name: string;
+  zoneName: string;
+  zoneType: 'PRODUCT' | 'CHECKOUT' | 'ENTRANCE' | 'CORRIDOR';
+  minDwellTime: number;
+  isActive: boolean;
   cameras: Camera[];
   position: { x: number; y: number; width: number; height: number };
   color: string;
@@ -25,105 +32,165 @@ interface Zone {
   styleUrls: ['./store.component.scss']
 })
 export class StoreComponent implements OnInit {
+  // Lists state
   availableCameras: Camera[] = [];
   zones: Zone[] = [];
-  selectedCamera: Camera | null = null;
+  
+  // Drag state
   draggedCamera: Camera | null = null;
-  draggedZone: Zone | null = null;
-  isDragging = false;
-  isDraggingZone = false;
   dragOffset = { x: 0, y: 0 };
-  errorMessage: string = '';
-  showZoneForm: boolean = false;
-
-  // Propriétés pour le redimensionnement
-  resizingZone: Zone | null = null;
-  resizeStart = { x: 0, y: 0 };
-  initialSize = { width: 0, height: 0 };
+  
+  // Resize state
+  isResizing = false;
   resizeDirection: 'e' | 's' | 'se' | null = null;
+  activeZone: Zone | null = null;
+  resizeStartPos = { x: 0, y: 0 };
+  resizeStartDimensions = { width: 0, height: 0 };
+  
+  // Dialog state
+  showCameraDialog = false;
+  showZoneDialog = false;
+  errorMessage = '';
 
+  // New item forms
   newCamera: Camera = {
     id: '',
-    name: '',
+    cameraName: '',
+    resolutionWidth: 1920,
+    resolutionHeight: 1080,
+    streamUrl: '',
+    status: 'ACTIVE',
     icon: 'fas fa-video',
     isActive: false
   };
 
   newZone: Zone = {
     id: '',
-    name: '',
+    zoneName: '',
+    zoneType: 'PRODUCT',
+    minDwellTime: 0,
+    isActive: true,
     cameras: [],
-    position: { x: 0, y: 0, width: 200, height: 150 },
-    color: '#E3F2FD'
+    position: { x: 10, y: 10, width: 200, height: 150 },
+    color: '#e9ecef'
   };
 
-  ngOnInit(): void {}
+  // Drag state for zones
+  isDraggingZone = false;
+  draggedZone: Zone | null = null;
 
-  onDragStart(event: DragEvent, camera: Camera): void {
-    this.draggedCamera = camera;
-    this.isDragging = true;
-    if (event.dataTransfer) {
-      event.dataTransfer.effectAllowed = 'move';
-      event.dataTransfer.setData('text/plain', camera.id);
+  constructor() {}
+
+  // Sample data for development/demo
+  ngOnInit(): void {
+    this.availableCameras = [
+      { id: 'CAM001', cameraName: 'Entrance Cam', resolutionWidth: 1920, resolutionHeight: 1080, streamUrl: '', status: 'ACTIVE', icon: 'bi bi-camera-fill', isActive: true },
+      { id: 'CAM002', cameraName: 'Checkout Cam', resolutionWidth: 1920, resolutionHeight: 1080, streamUrl: '', status: 'INACTIVE', icon: 'bi bi-camera-fill', isActive: false },
+      { id: 'CAM003', cameraName: 'Aisle Cam', resolutionWidth: 1920, resolutionHeight: 1080, streamUrl: '', status: 'MAINTENANCE', icon: 'bi bi-camera-fill', isActive: false }
+    ];
+    this.zones = [
+      { id: 'ZONE001', zoneName: 'Entrance', zoneType: 'ENTRANCE', minDwellTime: 0, isActive: true, cameras: [], position: { x: 40, y: 40, width: 200, height: 120 }, color: '#e9ecef' },
+      { id: 'ZONE002', zoneName: 'Checkout', zoneType: 'CHECKOUT', minDwellTime: 0, isActive: true, cameras: [], position: { x: 300, y: 60, width: 200, height: 120 }, color: '#ffe0b2' },
+      { id: 'ZONE003', zoneName: 'Aisle', zoneType: 'PRODUCT', minDwellTime: 0, isActive: false, cameras: [], position: { x: 100, y: 250, width: 200, height: 120 }, color: '#c8e6c9' }
+    ];
+  }
+
+  // Camera counter
+  getCameraCount(): number {
+    return this.availableCameras.length;
+  }
+
+  // Camera dialog methods
+  openCameraDialog() {
+    this.showCameraDialog = true;
+  }
+
+  closeCameraDialog() {
+    this.showCameraDialog = false;
+    this.resetCameraForm();
+  }
+
+  addCamera() {
+    if (!this.newCamera.id.trim() || !this.newCamera.cameraName.trim()) {
+      this.errorMessage = 'Please fill in all required fields';
+      return;
     }
-  }
-
-  onDragEnd(event: DragEvent): void {
-    this.draggedCamera = null;
-    this.isDragging = false;
-  }
-
-  onDragOver(event: DragEvent): void {
-    event.preventDefault();
-    if (event.dataTransfer) {
-      event.dataTransfer.dropEffect = 'move';
+    if (this.availableCameras.some(cam => cam.id === this.newCamera.id)) {
+      this.errorMessage = 'A camera with this ID already exists';
+      return;
     }
+    this.availableCameras.push({ 
+      ...this.newCamera,
+      isActive: this.newCamera.status === 'ACTIVE'
+    });
+    this.closeCameraDialog();
   }
 
-  onDrop(event: DragEvent, zone: Zone): void {
-    event.preventDefault();
-    if (this.draggedCamera) {
-      const cameraExists = zone.cameras.some(c => c.id === this.draggedCamera!.id);
-      if (!cameraExists) {
-        const cameraToAdd = { ...this.draggedCamera, isActive: true };
-        zone.cameras.push(cameraToAdd);
-        const availableCamera = this.availableCameras.find(c => c.id === this.draggedCamera!.id);
-        if (availableCamera) {
-          availableCamera.isActive = true;
-        }
-      }
+  resetCameraForm() {
+    this.newCamera = {
+      id: '',
+      cameraName: '',
+      resolutionWidth: 1920,
+      resolutionHeight: 1080,
+      streamUrl: '',
+      status: 'ACTIVE',
+      icon: 'fas fa-video',
+      isActive: false
+    };
+    this.errorMessage = '';
+  }
+
+  // Zone dialog methods
+  openZoneDialog() {
+    this.showZoneDialog = true;
+  }
+
+  closeZoneDialog() {
+    this.showZoneDialog = false;
+    this.resetZoneForm();
+  }
+
+  addZone() {
+    if (!this.newZone.id.trim() || !this.newZone.zoneName.trim()) {
+      this.errorMessage = 'Please fill in all required fields';
+      return;
     }
-    this.draggedCamera = null;
-    this.isDragging = false;
-  }
-
-  onCameraClick(camera: Camera): void {
-    this.selectedCamera = camera;
-    const zonesWithCamera = this.zones.filter(z => z.cameras.some(c => c.id === camera.id));
-    if (zonesWithCamera.length > 0) {
-      const zoneNames = zonesWithCamera.map(z => z.name).join(', ');
-      alert(`Caméra "${camera.name}" est assignée aux zones : ${zoneNames}`);
-    } else {
-      alert(`Caméra "${camera.name}" n'est assignée à aucune zone`);
+    if (this.zones.some(zone => zone.id === this.newZone.id)) {
+      this.errorMessage = 'A zone with this ID already exists';
+      return;
     }
+
+    const newPosition = {
+      x: Math.random() * 600,
+      y: Math.random() * 400,
+      width: 200,
+      height: 150
+    };
+
+    this.zones.push({
+      ...this.newZone,
+      cameras: [],
+      position: newPosition
+    });
+    this.closeZoneDialog();
   }
 
-  onZoneClick(zone: Zone): void {
-    console.log('Zone clicked:', zone);
+  resetZoneForm() {
+    this.newZone = {
+      id: '',
+      zoneName: '',
+      zoneType: 'PRODUCT',
+      minDwellTime: 0,
+      isActive: true,
+      cameras: [],
+      position: { x: 10, y: 10, width: 200, height: 150 },
+      color: '#e9ecef'
+    };
+    this.errorMessage = '';
   }
 
-  removeCameraFromZone(cameraId: string, zoneId: string): void {
-    const zone = this.zones.find(z => z.id === zoneId);
-    if (zone) {
-      zone.cameras = zone.cameras.filter(c => c.id !== cameraId);
-      const camera = this.availableCameras.find(c => c.id === cameraId);
-      if (camera) {
-        camera.isActive = false;
-      }
-    }
-  }
-
-  removeZone(zoneId: string): void {
+  // Zone operations
+  removeZone(zoneId: string) {
     const zone = this.zones.find(z => z.id === zoneId);
     if (zone) {
       zone.cameras.forEach(camera => {
@@ -136,145 +203,140 @@ export class StoreComponent implements OnInit {
     }
   }
 
-  resetCameraForm(): void {
-    this.newCamera = {
-      id: '',
-      name: '',
-      icon: 'fas fa-video',
-      isActive: false
-    };
-    this.errorMessage = '';
-  }
-
-  resetZoneForm(): void {
-    this.newZone = {
-      id: '',
-      name: '',
-      color: '#E3F2FD',
-      cameras: [],
-      position: { x: 0, y: 0, width: 200, height: 150 }
-    };
-    this.errorMessage = '';
-  }
-
-  addCamera(): void {
-    if (!this.newCamera.id.trim() || !this.newCamera.name.trim()) {
-      this.errorMessage = 'Veuillez remplir tous les champs requis';
-      return;
-    }
-    if (this.availableCameras.some(cam => cam.id === this.newCamera.id)) {
-      this.errorMessage = 'Une caméra avec cet ID existe déjà';
-      return;
-    }
-    this.availableCameras.push({ ...this.newCamera });
-    this.resetCameraForm();
-  }
-
-  addZone(): void {
-    if (!this.newZone.id.trim() || !this.newZone.name.trim()) {
-      this.errorMessage = 'Veuillez remplir tous les champs requis';
-      return;
-    }
-    if (this.zones.some(zone => zone.id === this.newZone.id)) {
-      this.errorMessage = 'Une zone avec cet ID existe déjà';
-      return;
-    }
-    const mapContainer = document.querySelector('.map-container');
-    if (mapContainer) {
-      const rect = mapContainer.getBoundingClientRect();
-      this.newZone.position = {
-        x: (rect.width - this.newZone.position.width) / 2,
-        y: (rect.height - this.newZone.position.height) / 2,
-        width: this.newZone.position.width,
-        height: this.newZone.position.height
-      };
-    }
-    this.zones.push({ ...this.newZone });
-    this.resetZoneForm();
-  }
-
-  onZoneDragStart(event: DragEvent, zone: Zone): void {
-    this.draggedZone = zone;
-    this.isDraggingZone = true;
-    if (event.dataTransfer) {
-      event.dataTransfer.effectAllowed = 'move';
-      const rect = (event.target as HTMLElement).getBoundingClientRect();
-      this.dragOffset = {
-        x: event.clientX - rect.left,
-        y: event.clientY - rect.top
-      };
-    }
-  }
-
-  onZoneDragEnd(event: DragEvent): void {
-    this.draggedZone = null;
-    this.isDraggingZone = false;
-  }
-
-  onMapDragOver(event: DragEvent): void {
-    event.preventDefault();
-    if (event.dataTransfer) {
-      event.dataTransfer.dropEffect = 'move';
-    }
-  }
-
-  onMapDrop(event: DragEvent): void {
-    event.preventDefault();
-    if (this.draggedZone) {
-      const mapContainer = document.querySelector('.map-container');
-      if (mapContainer) {
-        const rect = mapContainer.getBoundingClientRect();
-        const x = event.clientX - rect.left - this.dragOffset.x;
-        const y = event.clientY - rect.top - this.dragOffset.y;
-        this.updateZonePosition(this.draggedZone, x, y);
+  removeCameraFromZone(cameraId: string, zoneId: string) {
+    const zone = this.zones.find(z => z.id === zoneId);
+    if (zone) {
+      zone.cameras = zone.cameras.filter(c => c.id !== cameraId);
+      const camera = this.availableCameras.find(c => c.id === cameraId);
+      if (camera) {
+        camera.isActive = false;
       }
     }
-    this.draggedZone = null;
-    this.isDraggingZone = false;
   }
 
-  updateZonePosition(zone: Zone, x: number, y: number): void {
-    const mapContainer = document.querySelector('.map-container');
-    if (mapContainer) {
+  // Remove a zone from the map only (not from the list)
+  removeZoneFromMap(zoneId: string) {
+    const zone = this.zones.find(z => z.id === zoneId);
+    if (zone) {
+      zone.isActive = false;
+    }
+  }
+
+  // Add a zone back to the map from the list
+  showZoneOnMap(zoneId: string) {
+    const zone = this.zones.find(z => z.id === zoneId);
+    if (zone) {
+      zone.isActive = true;
+    }
+  }
+
+  // Remove a camera from the map but keep it in the list
+  hideCameraFromMap(cameraId: string) {
+    const camera = this.availableCameras.find(c => c.id === cameraId);
+    if (camera) {
+      camera.isActive = false;
+    }
+    // Also remove from all zones
+    this.zones.forEach(zone => {
+      zone.cameras = zone.cameras.filter(c => c.id !== cameraId);
+    });
+  }
+
+  // Add a camera back to the map from the list
+  showCameraOnMap(cameraId: string) {
+    const camera = this.availableCameras.find(c => c.id === cameraId);
+    if (camera) {
+      camera.isActive = true;
+    }
+  }
+
+  // --- ZONE DRAG/DROP/RESIZE LOGIC ---
+  onZoneMouseDown(event: MouseEvent, zone: Zone) {
+    // Prevent drag if resizing
+    if (this.isResizing) return;
+    this.isDraggingZone = true;
+    this.draggedZone = zone;
+    const zoneElem = event.currentTarget as HTMLElement;
+    const rect = zoneElem.getBoundingClientRect();
+    this.dragOffset = {
+      x: event.clientX - rect.left,
+      y: event.clientY - rect.top
+    };
+    event.preventDefault();
+  }
+
+  @HostListener('window:mousemove', ['$event'])
+  onMouseMove(event: MouseEvent) {
+    // --- Resizing ---
+    if (this.isResizing && this.activeZone) {
+      const mapContainer = document.querySelector('.map-container');
+      if (!mapContainer) return;
       const rect = mapContainer.getBoundingClientRect();
-      const maxX = rect.width - zone.position.width;
-      const maxY = rect.height - zone.position.height;
-      zone.position.x = Math.max(0, Math.min(x, maxX));
-      zone.position.y = Math.max(0, Math.min(y, maxY));
+      let newWidth = this.resizeStartDimensions.width;
+      let newHeight = this.resizeStartDimensions.height;
+      const minWidth = 80;
+      const minHeight = 60;
+      if (this.resizeDirection === 'e' || this.resizeDirection === 'se') {
+        newWidth = this.resizeStartDimensions.width + (event.clientX - this.resizeStartPos.x);
+        newWidth = Math.max(minWidth, newWidth);
+        newWidth = Math.min(newWidth, rect.width - this.activeZone.position.x);
+      }
+      if (this.resizeDirection === 's' || this.resizeDirection === 'se') {
+        newHeight = this.resizeStartDimensions.height + (event.clientY - this.resizeStartPos.y);
+        newHeight = Math.max(minHeight, newHeight);
+        newHeight = Math.min(newHeight, rect.height - this.activeZone.position.y);
+      }
+      this.activeZone.position.width = newWidth;
+      this.activeZone.position.height = newHeight;
+      return;
+    }
+    // --- Dragging ---
+    if (this.isDraggingZone && this.draggedZone && !this.isResizing) {
+      const mapContainer = document.querySelector('.map-container');
+      if (!mapContainer) return;
+      const rect = mapContainer.getBoundingClientRect();
+      let x = event.clientX - rect.left - this.dragOffset.x;
+      let y = event.clientY - rect.top - this.dragOffset.y;
+      const maxX = rect.width - this.draggedZone.position.width;
+      const maxY = rect.height - this.draggedZone.position.height;
+      this.draggedZone.position.x = Math.max(0, Math.min(x, maxX));
+      this.draggedZone.position.y = Math.max(0, Math.min(y, maxY));
     }
   }
 
-  onZoneResizeStart(event: MouseEvent, zone: Zone, direction: 'e' | 's' | 'se'): void {
+  @HostListener('window:mouseup', ['$event'])
+  onMouseUp(event: MouseEvent) {
+    // Always clear resize state
+    if (this.isResizing) {
+      this.isResizing = false;
+      this.activeZone = null;
+      this.resizeDirection = null;
+    }
+    // Always clear drag state
+    if (this.isDraggingZone) {
+      this.isDraggingZone = false;
+      this.draggedZone = null;
+    }
+  }
+
+  onZoneResizeStart(event: MouseEvent, zone: Zone, direction: 'e' | 's' | 'se') {
+    event.preventDefault();
     event.stopPropagation();
-    this.resizingZone = zone;
+    this.isResizing = true;
     this.resizeDirection = direction;
-    this.resizeStart = { x: event.clientX, y: event.clientY };
-    this.initialSize = { width: zone.position.width, height: zone.position.height };
-    document.addEventListener('mousemove', this.onZoneResizeMove.bind(this));
-    document.addEventListener('mouseup', this.onZoneResizeEnd.bind(this));
-  }
-
-  onZoneResizeMove(event: MouseEvent): void {
-    if (!this.resizingZone || !this.resizeDirection) return;
-    const deltaX = event.clientX - this.resizeStart.x;
-    const deltaY = event.clientY - this.resizeStart.y;
-    if (this.resizeDirection.includes('e')) {
-      this.resizingZone.position.width = Math.max(150, this.initialSize.width + deltaX);
-    }
-    if (this.resizeDirection.includes('s')) {
-      this.resizingZone.position.height = Math.max(100, this.initialSize.height + deltaY);
-    }
-  }
-
-  onZoneResizeEnd(): void {
-    this.resizingZone = null;
-    this.resizeDirection = null;
-    document.removeEventListener('mousemove', this.onZoneResizeMove.bind(this));
-    document.removeEventListener('mouseup', this.onZoneResizeEnd.bind(this));
+    this.activeZone = zone;
+    this.resizeStartPos = { x: event.clientX, y: event.clientY };
+    this.resizeStartDimensions = {
+      width: zone.position.width,
+      height: zone.position.height
+    };
+    // Prevent drag while resizing
+    this.isDraggingZone = false;
+    this.draggedZone = null;
   }
 
   isZoneResizing(zone: Zone): boolean {
-    return this.resizingZone?.id === zone.id;
+    return this.isResizing && this.activeZone === zone;
   }
 
   getResizeHandleStyle(direction: 'e' | 's' | 'se'): any {
@@ -284,7 +346,6 @@ export class StoreComponent implements OnInit {
       opacity: 0.5,
       transition: 'opacity 0.2s'
     };
-
     switch (direction) {
       case 'e':
         return {
@@ -316,20 +377,91 @@ export class StoreComponent implements OnInit {
     }
   }
 
-  // Méthode pour obtenir le nombre de caméras actives
-  getCameraCount(): string {
-    const totalCameras = this.availableCameras.length;
-    const activeCameras = this.availableCameras.filter(c => c.isActive).length;
-    return `${activeCameras}/${totalCameras}`;
+  // Utility methods
+  onDragStart(event: DragEvent, camera: Camera) {
+    this.draggedCamera = camera;
+    if (event.dataTransfer) {
+      event.dataTransfer.setData('camera', camera.id);
+      event.dataTransfer.effectAllowed = 'move';
+    }
   }
 
-  // Méthode pour supprimer une caméra
-  removeCamera(cameraId: string): void {
-    // Supprimer la caméra de toutes les zones
-    this.zones.forEach(zone => {
-      zone.cameras = zone.cameras.filter(c => c.id !== cameraId);
-    });
-    // Supprimer la caméra de la liste des caméras disponibles
-    this.availableCameras = this.availableCameras.filter(c => c.id !== cameraId);
+  onDragEnd(event: DragEvent) {
+    this.draggedCamera = null;
+  }
+
+  onMapDragOver(event: DragEvent) {
+    event.preventDefault();
+    if (event.dataTransfer) {
+      event.dataTransfer.dropEffect = 'move';
+    }
+  }
+
+  onMapDrop(event: DragEvent) {
+    event.preventDefault();
+    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+
+    if (!event.dataTransfer) return;
+
+    // Handle camera drop
+    const cameraId = event.dataTransfer.getData('camera');
+    if (cameraId && this.draggedCamera) {
+      const dropZone = this.findZoneAtPoint(x, y);
+      if (dropZone && !dropZone.cameras.some((c: Camera) => c.id === cameraId)) {
+        const camera = { ...this.draggedCamera, isActive: true };
+        dropZone.cameras.push(camera);
+        const availCamera = this.availableCameras.find((c: Camera) => c.id === cameraId);
+        if (availCamera) {
+          availCamera.isActive = true;
+        }
+      }
+      return;
+    }
+
+    // Handle zone drop from list
+    const zoneId = event.dataTransfer.getData('zone');
+    if (zoneId) {
+      const zone = this.zones.find((z: Zone) => z.id === zoneId);
+      if (zone) {
+        zone.isActive = true;
+        // Center the zone under the cursor
+        zone.position.x = x - zone.position.width / 2;
+        zone.position.y = y - zone.position.height / 2;
+        // Clamp to map bounds
+        const mapWidth = rect.width;
+        const mapHeight = rect.height;
+        zone.position.x = Math.max(0, Math.min(zone.position.x, mapWidth - zone.position.width));
+        zone.position.y = Math.max(0, Math.min(zone.position.y, mapHeight - zone.position.height));
+      }
+    }
+  }
+
+  private findZoneAtPoint(x: number, y: number): Zone | null {
+    return this.zones.find((zone: Zone) => {
+      const pos = zone.position;
+      return zone.isActive && x >= pos.x && x <= pos.x + pos.width && y >= pos.y && y <= pos.y + pos.height;
+    }) || null;
+  }
+
+  // Drag and drop for zones from the list
+  onZoneDragStart(event: DragEvent, zone: Zone) {
+    if (event.dataTransfer) {
+      event.dataTransfer.setData('zone', zone.id);
+      event.dataTransfer.effectAllowed = 'move';
+    }
+  }
+
+  onZoneDragEnd(event: DragEvent, zone: Zone) {
+    // No-op for now, but can be used for visual feedback
+  }
+
+  saveMap() {
+    // For now, just log the current state. Replace with real save logic as needed.
+    console.log('Saving map...');
+    console.log('Zones:', this.zones);
+    console.log('Cameras:', this.availableCameras);
+    // You can add API call or file export logic here.
   }
 }

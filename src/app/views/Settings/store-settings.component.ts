@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+// @ts-ignore
 import timezones from './timezones.json';
 import {NgForOf} from "@angular/common";
 
