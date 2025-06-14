@@ -9,10 +9,11 @@
       </button>
     </div>
     <div class="cameras-items"
-      style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 0.75rem;">
+      style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.75rem;">
       <div *ngFor="let camera of availableCameras"
-        class="camera-item d-flex align-items-center p-1 bg-light rounded shadow-sm" [draggable]="true"
-        (dragstart)="onDragStart($event, camera)" (dragend)="onDragEnd($event)" style="min-width: 0;">
+        class="camera-item d-flex align-items-center p-2 bg-light rounded shadow-sm" [draggable]="true"
+        (dragstart)="onDragStart($event, camera)" (dragend)="onDragEnd($event)"
+        style="min-width: 0; position: relative;">
         <i class="bi bi-camera-fill me-2 text-primary"></i>
         <span class="camera-name flex-fill">{{ camera.cameraName }}</span>
         <span class="camera-dot ms-2" [ngClass]="{
@@ -20,6 +21,21 @@
           'dot-yellow': camera.status === 'MAINTENANCE',
           'dot-red': camera.status === 'INACTIVE'
         }">●</span>
+        <!-- 3-dots options button -->
+        <button class="btn btn-link btn-sm px-1 py-0 ms-1" (click)="camera.showMenu = !camera.showMenu" type="button"
+          tabindex="-1" [attr.data-camera-menu-btn-id]="camera.id">
+          <i class="bi bi-three-dots-vertical"></i>
+          <span style="font-size: 1.2em; vertical-align: middle;">&#8942;</span>
+        </button>
+        <!-- Options menu -->
+        <div class="camera-options-menu dropdown-menu show" *ngIf="camera.showMenu"
+          [attr.data-camera-menu-id]="camera.id"
+          style="position: absolute; right: 0; top: 100%; min-width: 120px; z-index: 10;">
+          <button class="dropdown-item" (click)="viewCamera(camera); camera.showMenu = false">View</button>
+          <button class="dropdown-item" (click)="editCamera(camera); camera.showMenu = false">Edit</button>
+          <button class="dropdown-item text-danger" (click)="deleteCamera(camera); camera.showMenu = false">Delete
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -33,24 +49,48 @@
       </button>
     </div>
     <div class="zone-items"
-      style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 0.75rem;">
+      style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.75rem;">
       <ng-container *ngFor="let zone of zones">
         <div *ngIf="!zone.isActive"
-          class="zone-item d-flex align-items-center p-1 bg-light rounded shadow-sm zone-inactive" [draggable]="true"
+          class="zone-item d-flex align-items-center p-2 bg-light rounded shadow-sm zone-inactive" [draggable]="true"
           (dragstart)="onZoneDragStart($event, zone)" (dragend)="onZoneDragEnd($event, zone)"
-          [attr.title]="'Drag to map'" style="min-width: 0; opacity: 1; cursor: grab;">
+          [attr.title]="'Drag to map'" style="min-width: 0; opacity: 1; cursor: grab; position: relative;">
           <span class="zone-dot me-2 dot-red">●</span>
           <span class="zone-name flex-fill">{{ zone.zoneName }}</span>
-          <button class="btn btn-outline-danger btn-sm ms-2 py-0 px-1" style="font-size: 0.9em; line-height: 1;"
-            (click)="removeZoneFromMap(zone.id)" [disabled]="true" [attr.title]="'Zone not on map'">&times;</button>
+          <!-- 3-dots options button -->
+          <button class="btn btn-link btn-sm px-1 py-0 ms-1" (click)="zone.showMenu = !zone.showMenu" type="button"
+            tabindex="-1" [attr.data-zone-menu-btn-id]="zone.id">
+            <i class="bi bi-three-dots-vertical"></i>
+            <span style="font-size: 1.2em; vertical-align: middle;">&#8942;</span>
+          </button>
+          <!-- Options menu -->
+          <div class="zone-options-menu dropdown-menu show" *ngIf="zone.showMenu" [attr.data-zone-menu-id]="zone.id"
+            style="position: absolute; right: 0; top: 100%; min-width: 120px; z-index: 10;">
+            <button class="dropdown-item" (click)="viewZone(zone); zone.showMenu = false">View</button>
+            <button class="dropdown-item" (click)="editZone(zone); zone.showMenu = false">Edit</button>
+            <button class="dropdown-item text-danger" (click)="deleteZone(zone); zone.showMenu = false">Delete
+            </button>
+          </div>
         </div>
         <div *ngIf="zone.isActive"
           class="zone-item d-flex align-items-center p-2 bg-light rounded shadow-sm zone-active" [draggable]="false"
-          [attr.title]="'Zone is already on the map'" style="min-width: 0; opacity: 0.5; cursor: not-allowed;">
-          <span class="zone-dot me-2 dot-green">●</span>
-          <span class="zone-name flex-fill">{{ zone.zoneName }}</span>
-          <button class="btn btn-outline-danger btn-sm ms-2 py-0 px-1" style="font-size: 0.9em; line-height: 1;"
-            (click)="removeZoneFromMap(zone.id)" [disabled]="false" [attr.title]="'Remove from map'">&times;</button>
+          [attr.title]="'Zone is already on the map'" style="min-width: 0; position: relative;">
+          <span class="zone-dot me-2 dot-green" [style.opacity]="0.5">●</span>
+          <span class="zone-name flex-fill" [style.opacity]="0.5">{{ zone.zoneName }}</span>
+          <!-- 3-dots options button -->
+          <button class="btn btn-link btn-sm px-1 py-0 ms-1" (click)="zone.showMenu = !zone.showMenu" type="button"
+            tabindex="-1" [attr.data-zone-menu-btn-id]="zone.id" style="opacity: 1; pointer-events: auto;">
+            <i class="bi bi-three-dots-vertical"></i>
+            <span style="font-size: 1.2em; vertical-align: middle;">&#8942;</span>
+          </button>
+          <!-- Options menu -->
+          <div class="zone-options-menu dropdown-menu show" *ngIf="zone.showMenu" [attr.data-zone-menu-id]="zone.id"
+            style="position: absolute; right: 0; top: 100%; min-width: 120px; z-index: 10; opacity: 1; pointer-events: auto;">
+            <button class="dropdown-item" (click)="viewZone(zone); zone.showMenu = false">View</button>
+            <button class="dropdown-item" (click)="editZone(zone); zone.showMenu = false">Edit</button>
+            <button class="dropdown-item text-danger" (click)="deleteZone(zone); zone.showMenu = false">Delete
+            </button>
+          </div>
         </div>
       </ng-container>
     </div>
@@ -79,15 +119,17 @@
               <span>Drop camera here</span>
             </div>
             <div class="camera-list">
-              <div class="camera-item d-flex align-items-center" *ngFor="let camera of zone.cameras">
-                <i class="bi bi-camera-fill me-2 text-primary"></i>
+              <div class="camera-item d-flex align-items-center" *ngFor="let camera of zone.cameras"
+                style="font-size: 0.85em; padding: 2px 4px; min-height: 28px;">
+                <i class="bi bi-camera-fill me-2 text-primary" style="font-size: 1em;"></i>
                 <span class="camera-name flex-fill">{{ camera.cameraName }}</span>
                 <span class="camera-dot ms-2" [ngClass]="{
                   'dot-green': camera.status === 'ACTIVE',
                   'dot-yellow': camera.status === 'MAINTENANCE',
                   'dot-red': camera.status === 'INACTIVE'
-                }">●</span>
-                <button class="btn btn-outline-danger btn-sm ms-2 py-0 px-1" style="font-size: 0.9em; line-height: 1;"
+                }" style="font-size: 1em;">●</span>
+                <button class="btn btn-outline-danger btn-sm ms-2 py-0 px-1"
+                  style="font-size: 0.8em; line-height: 1; min-width: 20px; min-height: 20px;"
                   (click)="removeCameraFromZone(camera.id, zone.id)">&times;</button>
               </div>
             </div>
@@ -203,6 +245,196 @@
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" (click)="closeZoneDialog()">Cancel</button>
             <button type="submit" class="btn btn-primary">Add Zone</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- View Camera Dialog -->
+<div class="modal fade show" tabindex="-1"
+  [ngStyle]="{display: showViewCameraDialog ? 'block' : 'none', background: 'rgba(0,0,0,0.3)'}"
+  *ngIf="showViewCameraDialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">View Camera</h5>
+        <button type="button" class="btn-close" (click)="closeViewCameraDialog()"></button>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="form-group mb-2">
+            <label>ID</label>
+            <input type="text" class="form-control" [value]="viewCameraData?.id" readonly>
+          </div>
+          <div class="form-group mb-2">
+            <label>Camera Name</label>
+            <input type="text" class="form-control" [value]="viewCameraData?.cameraName" readonly>
+          </div>
+          <div class="form-group mb-2">
+            <label>Resolution Width</label>
+            <input type="number" class="form-control" [value]="viewCameraData?.resolutionWidth" readonly>
+          </div>
+          <div class="form-group mb-2">
+            <label>Resolution Height</label>
+            <input type="number" class="form-control" [value]="viewCameraData?.resolutionHeight" readonly>
+          </div>
+          <div class="form-group mb-2">
+            <label>Stream URL</label>
+            <input type="text" class="form-control" [value]="viewCameraData?.streamUrl" readonly>
+          </div>
+          <div class="form-group mb-2">
+            <label>Status</label>
+            <input type="text" class="form-control" [value]="viewCameraData?.status" readonly>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- View Zone Dialog -->
+<div class="modal fade show" tabindex="-1"
+  [ngStyle]="{display: showViewZoneDialog ? 'block' : 'none', background: 'rgba(0,0,0,0.3)'}"
+  *ngIf="showViewZoneDialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">View Zone</h5>
+        <button type="button" class="btn-close" (click)="closeViewZoneDialog()"></button>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="form-group mb-2">
+            <label>ID</label>
+            <input type="text" class="form-control" [value]="viewZoneData?.id" readonly>
+          </div>
+          <div class="form-group mb-2">
+            <label>Zone Name</label>
+            <input type="text" class="form-control" [value]="viewZoneData?.zoneName" readonly>
+          </div>
+          <div class="form-group mb-2">
+            <label>Zone Type</label>
+            <input type="text" class="form-control" [value]="viewZoneData?.zoneType" readonly>
+          </div>
+          <div class="form-group mb-2">
+            <label>Min Dwell Time</label>
+            <input type="number" class="form-control" [value]="viewZoneData?.minDwellTime" readonly>
+          </div>
+          <div class="form-group mb-2">
+            <label>Active</label>
+            <input type="text" class="form-control" [value]="viewZoneData?.isActive ? 'Yes' : 'No'" readonly>
+          </div>
+          <div class="form-group mb-2">
+            <label>Color</label>
+            <input type="color" class="form-control form-control-color" [value]="viewZoneData?.color" disabled>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Camera Dialog -->
+<div class="modal fade show" tabindex="-1"
+  [ngStyle]="{display: showEditCameraDialog ? 'block' : 'none', background: 'rgba(0,0,0,0.3)'}"
+  *ngIf="showEditCameraDialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Edit Camera</h5>
+        <button type="button" class="btn-close" (click)="closeEditCameraDialog()"></button>
+      </div>
+      <div class="modal-body">
+        <form *ngIf="editCameraData" (ngSubmit)="saveEditCamera()">
+          <div class="form-group mb-2">
+            <label>ID</label>
+            <input type="text" class="form-control" [(ngModel)]="editCameraData.id" name="editCameraId" readonly>
+          </div>
+          <div class="form-group mb-2">
+            <label>Camera Name</label>
+            <input type="text" class="form-control" [(ngModel)]="editCameraData.cameraName" name="editCameraName"
+              required>
+          </div>
+          <div class="form-group mb-2">
+            <label>Resolution Width</label>
+            <input type="number" class="form-control" [(ngModel)]="editCameraData.resolutionWidth"
+              name="editCameraResolutionWidth" required>
+          </div>
+          <div class="form-group mb-2">
+            <label>Resolution Height</label>
+            <input type="number" class="form-control" [(ngModel)]="editCameraData.resolutionHeight"
+              name="editCameraResolutionHeight" required>
+          </div>
+          <div class="form-group mb-2">
+            <label>Stream URL</label>
+            <input type="text" class="form-control" [(ngModel)]="editCameraData.streamUrl" name="editCameraStreamUrl">
+          </div>
+          <div class="form-group mb-2">
+            <label>Status</label>
+            <select class="form-select" [(ngModel)]="editCameraData.status" name="editCameraStatus">
+              <option value="ACTIVE">Active</option>
+              <option value="INACTIVE">Inactive</option>
+              <option value="MAINTENANCE">Maintenance</option>
+            </select>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" (click)="closeEditCameraDialog()">Cancel</button>
+            <button type="submit" class="btn btn-primary">Save</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Zone Dialog -->
+<div class="modal fade show" tabindex="-1"
+  [ngStyle]="{display: showEditZoneDialog ? 'block' : 'none', background: 'rgba(0,0,0,0.3)'}"
+  *ngIf="showEditZoneDialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Edit Zone</h5>
+        <button type="button" class="btn-close" (click)="closeEditZoneDialog()"></button>
+      </div>
+      <div class="modal-body">
+        <form *ngIf="editZoneData" (ngSubmit)="saveEditZone()">
+          <div class="form-group mb-2">
+            <label>ID</label>
+            <input type="text" class="form-control" [(ngModel)]="editZoneData.id" name="editZoneId" readonly>
+          </div>
+          <div class="form-group mb-2">
+            <label>Zone Name</label>
+            <input type="text" class="form-control" [(ngModel)]="editZoneData.zoneName" name="editZoneName" required>
+          </div>
+          <div class="form-group mb-2">
+            <label>Zone Type</label>
+            <select class="form-select" [(ngModel)]="editZoneData.zoneType" name="editZoneType">
+              <option value="PRODUCT">Product</option>
+              <option value="CHECKOUT">Checkout</option>
+              <option value="ENTRANCE">Entrance</option>
+              <option value="CORRIDOR">Corridor</option>
+            </select>
+          </div>
+          <div class="form-group mb-2">
+            <label>Min Dwell Time</label>
+            <input type="number" class="form-control" [(ngModel)]="editZoneData.minDwellTime"
+              name="editZoneMinDwellTime" required>
+          </div>
+          <div class="form-group mb-2">
+            <label>Active</label>
+            <input type="checkbox" class="form-check-input" [(ngModel)]="editZoneData.isActive" name="editZoneIsActive">
+          </div>
+          <div class="form-group mb-2">
+            <label>Color</label>
+            <input type="color" class="form-control form-control-color" [(ngModel)]="editZoneData.color"
+              name="editZoneColor">
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" (click)="closeEditZoneDialog()">Cancel</button>
+            <button type="submit" class="btn btn-primary">Save</button>
           </div>
         </form>
       </div>

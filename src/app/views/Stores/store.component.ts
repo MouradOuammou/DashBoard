@@ -11,6 +11,7 @@ interface Camera {
   status: 'ACTIVE' | 'INACTIVE' | 'MAINTENANCE';
   icon?: string;
   isActive?: boolean;
+  showMenu?: boolean;
 }
 
 interface Zone {
@@ -18,8 +19,9 @@ interface Zone {
   zoneName: string;
   zoneType: 'PRODUCT' | 'CHECKOUT' | 'ENTRANCE' | 'CORRIDOR';
   minDwellTime: number;
-  isActive: boolean;
   cameras: Camera[];
+  isActive: boolean;
+  showMenu?: boolean;
   position: { x: number; y: number; width: number; height: number };
   color: string;
 }
@@ -50,6 +52,14 @@ export class StoreComponent implements OnInit {
   // Dialog state
   showCameraDialog = false;
   showZoneDialog = false;
+  showViewCameraDialog = false;
+  showViewZoneDialog = false;
+  showEditCameraDialog = false;
+  showEditZoneDialog = false;
+  editCameraData: Camera | null = null;
+  editZoneData: Zone | null = null;
+  viewCameraData: Camera | null = null;
+  viewZoneData: Zone | null = null;
   errorMessage = '';
 
   // New item forms
@@ -93,6 +103,43 @@ export class StoreComponent implements OnInit {
       { id: 'ZONE002', zoneName: 'Checkout', zoneType: 'CHECKOUT', minDwellTime: 0, isActive: true, cameras: [], position: { x: 300, y: 60, width: 200, height: 120 }, color: '#ffe0b2' },
       { id: 'ZONE003', zoneName: 'Aisle', zoneType: 'PRODUCT', minDwellTime: 0, isActive: false, cameras: [], position: { x: 100, y: 250, width: 200, height: 120 }, color: '#c8e6c9' }
     ];
+
+    document.addEventListener('click', this.handleDocumentClick.bind(this));
+  }
+
+  ngOnDestroy(): void {
+    document.removeEventListener('click', this.handleDocumentClick.bind(this));
+  }
+
+  handleDocumentClick(event: MouseEvent) {
+    // Close all camera and zone menus if click is outside any menu button or menu
+    const target = event.target as HTMLElement;
+    // Camera menus
+    let cameraMenuClicked = false;
+    for (const camera of this.availableCameras) {
+      if (camera.showMenu) {
+        const menuBtn = document.querySelector(`[data-camera-menu-btn-id='${camera.id}']`);
+        const menu = document.querySelector(`[data-camera-menu-id='${camera.id}']`);
+        if (menuBtn && menu && (menuBtn.contains(target) || menu.contains(target))) {
+          cameraMenuClicked = true;
+        } else {
+          camera.showMenu = false;
+        }
+      }
+    }
+    // Zone menus
+    let zoneMenuClicked = false;
+    for (const zone of this.zones) {
+      if (zone.showMenu) {
+        const menuBtn = document.querySelector(`[data-zone-menu-btn-id='${zone.id}']`);
+        const menu = document.querySelector(`[data-zone-menu-id='${zone.id}']`);
+        if (menuBtn && menu && (menuBtn.contains(target) || menu.contains(target))) {
+          zoneMenuClicked = true;
+        } else {
+          zone.showMenu = false;
+        }
+      }
+    }
   }
 
   // Camera counter
@@ -463,5 +510,86 @@ export class StoreComponent implements OnInit {
     console.log('Zones:', this.zones);
     console.log('Cameras:', this.availableCameras);
     // You can add API call or file export logic here.
+  }
+
+  // Camera options menu actions
+  viewCamera(camera: Camera) {
+    this.viewCameraData = camera;
+    this.showViewCameraDialog = true;
+  }
+
+  editCamera(camera: Camera) {
+    this.editCameraData = { ...camera };
+    this.showEditCameraDialog = true;
+  }
+
+  saveEditCamera() {
+    if (!this.editCameraData) return;
+    const idx = this.availableCameras.findIndex(c => c.id === this.editCameraData!.id);
+    if (idx !== -1) {
+      this.availableCameras[idx] = { ...this.editCameraData };
+    }
+    // Update all dropped cameras in zones as well
+    this.zones.forEach(zone => {
+      zone.cameras = zone.cameras.map(c =>
+        c.id === this.editCameraData!.id ? { ...this.editCameraData! } : c
+      );
+    });
+    this.closeEditCameraDialog();
+  }
+
+  closeEditCameraDialog() {
+    this.showEditCameraDialog = false;
+    this.editCameraData = null;
+  }
+
+  // Zone options menu actions
+  viewZone(zone: Zone) {
+    this.viewZoneData = zone;
+    this.showViewZoneDialog = true;
+  }
+
+  editZone(zone: Zone) {
+    this.editZoneData = { ...zone };
+    this.showEditZoneDialog = true;
+  }
+
+  saveEditZone() {
+    if (!this.editZoneData) return;
+    const idx = this.zones.findIndex(z => z.id === this.editZoneData!.id);
+    if (idx !== -1) {
+      this.zones[idx] = { ...this.editZoneData };
+    }
+    this.closeEditZoneDialog();
+  }
+
+  closeEditZoneDialog() {
+    this.showEditZoneDialog = false;
+    this.editZoneData = null;
+  }
+
+  deleteCamera(camera: Camera) {
+    if (confirm(`Delete camera: ${camera.cameraName}?`)) {
+      this.availableCameras = this.availableCameras.filter(c => c.id !== camera.id);
+      this.zones.forEach(zone => {
+        zone.cameras = zone.cameras.filter(c => c.id !== camera.id);
+      });
+    }
+  }
+
+  closeViewCameraDialog() {
+    this.showViewCameraDialog = false;
+    this.viewCameraData = null;
+  }
+
+  deleteZone(zone: Zone) {
+    if (confirm(`Delete zone: ${zone.zoneName}?`)) {
+      this.zones = this.zones.filter(z => z.id !== zone.id);
+    }
+  }
+
+  closeViewZoneDialog() {
+    this.showViewZoneDialog = false;
+    this.viewZoneData = null;
   }
 }
