@@ -39,10 +39,9 @@ import { AuthService } from '../../../../service/Authentification/auth.service'
     IconDirective,
     FormControlDirective,
     ButtonDirective,
-    NgStyle,
     FormsModule,
     NgIf,
-  
+
   ]
 })
 export class LoginComponent {
