@@ -79,6 +79,13 @@ export const routes: Routes = [
           title: 'Store Zones'
         }
       },
+      {
+        path: 'all-streams',
+        loadComponent: () => import('./views/Stores/all-streams.component').then(m => m.AllStreamsComponent),
+        data: {
+          title: 'All Camera Streams'
+        }
+      },
 
 
 

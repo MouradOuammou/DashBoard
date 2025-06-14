@@ -2,11 +2,16 @@
 <div class="d-flex flex-row gap-4 mb-4" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
   <!-- Camera List -->
   <div class="bg-white p-3 rounded shadow-sm" style="width: 100%;">
-    <div class="d-flex justify-content-between align-items-center mb-2">
+    <div class="d-flex justify-content-between align-items-center mb-4">
       <h5 class="mb-0">Cameras</h5>
-      <button class="btn btn-primary btn-sm" (click)="openCameraDialog()">
-        <i class="fas fa-plus"></i> Add Camera
-      </button>
+      <div class="d-flex gap-2">
+        <button class="btn btn-primary btn-sm" (click)="openCameraDialog()">
+          <i class="fas fa-plus"></i> Add Camera
+        </button>
+        <button class="btn btn-outline-secondary btn-sm" (click)="goToAllStreams()">
+          <i class="bi bi-camera-video"></i> View All Streams
+        </button>
+      </div>
     </div>
     <div class="cameras-items"
       style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.75rem;">
@@ -31,6 +36,7 @@
         <div class="camera-options-menu dropdown-menu show" *ngIf="camera.showMenu"
           [attr.data-camera-menu-id]="camera.id"
           style="position: absolute; right: 0; top: 100%; min-width: 120px; z-index: 10;">
+          <button class="dropdown-item" (click)="viewStream(camera); camera.showMenu = false">View Stream</button>
           <button class="dropdown-item" (click)="viewCamera(camera); camera.showMenu = false">View</button>
           <button class="dropdown-item" (click)="editCamera(camera); camera.showMenu = false">Edit</button>
           <button class="dropdown-item text-danger" (click)="deleteCamera(camera); camera.showMenu = false">Delete
@@ -42,7 +48,7 @@
 
   <!-- Zone List -->
   <div class="bg-white p-3 rounded shadow-sm" style="width: 100%;">
-    <div class="d-flex justify-content-between align-items-center mb-2">
+    <div class="d-flex justify-content-between align-items-center mb-4">
       <h5 class="mb-0">Zones</h5>
       <button class="btn btn-primary btn-sm" (click)="openZoneDialog()">
         <i class="fas fa-plus"></i> Add Zone
@@ -439,5 +445,19 @@
         </form>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- Stream Video Modal Dialog -->
+<div *ngIf="showStreamDialog" class="custom-modal-overlay" (mousedown)="closeStreamDialog()">
+  <div class="custom-modal-dialog" (mousedown)="$event.stopPropagation()">
+    <button type="button" class="custom-close-btn" aria-label="Close" (click)="closeStreamDialog()">&times;</button>
+    <ng-container *ngIf="streamUrl; else noStream">
+      <app-hls-video-player [src]="streamUrl" (error)="onStreamError($event)"></app-hls-video-player>
+      <div *ngIf="streamError" class="custom-stream-error">{{ streamError }}</div>
+    </ng-container>
+    <ng-template #noStream>
+      <div class="custom-stream-error">No stream URL is set for this camera.</div>
+    </ng-template>
   </div>
 </div>

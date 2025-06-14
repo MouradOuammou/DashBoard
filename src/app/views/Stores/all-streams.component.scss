@@ -1,0 +1,288 @@
+.all-streams-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1.5rem 0;
+  }
+  
+  .all-streams-title {
+    text-align: center;
+    margin-bottom: 2rem;
+    color: #2c5aa0;
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    font-family: 'Arial', sans-serif;
+  }
+  
+  .streams-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+  }
+  
+  .stream-card {
+    width: 100%;
+    background: #ffffff;
+    border: 2px solid #e2e8f0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: border-color 0.2s ease;
+  
+    &:hover {
+      border-color: #cbd5e0;
+    }
+  }
+  
+  .stream-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-bottom: 2px solid #e2e8f0;
+    background: #f8fafc;
+    font-family: 'Courier New', monospace;
+    position: relative;
+  }
+  
+  .stream-header-actions {
+    margin-left: auto;
+    display: flex;
+    gap: 0.5rem;
+  }
+  
+  .btn.btn-outline-primary.btn-sm {
+    background: #fff;
+    color: #2563eb;
+    border: 1.5px solid #2563eb;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .btn.btn-outline-primary.btn-sm:hover {
+    background: #2563eb;
+    color: #fff;
+  }
+  
+  .btn.btn-outline-secondary.btn-sm {
+    background: #fff;
+    color: #64748b;
+    border: 1.5px solid #64748b;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .btn.btn-outline-secondary.btn-sm:hover {
+    background: #64748b;
+    color: #fff;
+  }
+  
+  .stream-status {
+    font-size: 12px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    position: relative;
+  
+    &.status-active {
+      background-color: #22c55e;
+      box-shadow: 0 0 6px rgba(34, 197, 94, 0.4);
+      animation: pulse-status 2s infinite;
+    }
+  
+    &.status-inactive {
+      background-color: #ef4444;
+      box-shadow: 0 0 6px rgba(239, 68, 68, 0.4);
+      animation: pulse-status 2s infinite;
+    }
+  
+    &.status-maintenance {
+      background-color: #f59e0b;
+      box-shadow: 0 0 6px rgba(245, 158, 11, 0.4);
+      animation: pulse-status 2s infinite;
+    }
+  }
+  
+  @keyframes pulse-status {
+    0%, 100% { 
+      opacity: 1; 
+      transform: scale(1);
+    }
+    50% { 
+      opacity: 0.6; 
+      transform: scale(0.9);
+    }
+  }
+  
+  .stream-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+  }
+  
+  .stream-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  .stream-meta {
+    font-size: 11px;
+    color: #64748b;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+  }
+  
+  .stream-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: stretch;
+    padding: 0;
+    background: #000000;
+    min-height: 400px;
+    position: relative;
+  
+    // Make video player take full width
+    app-hls-video-player {
+      width: 100%;
+      height: 100%;
+      display: block;
+  
+      // Ensure video element takes full width
+      video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+    }
+  
+    // Add subtle grid overlay for surveillance feel
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: 
+        linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+      background-size: 20px 20px;
+      pointer-events: none;
+      z-index: 1;
+    }
+  
+    // Add camera info overlay
+    &::after {
+      content: '';
+      display: none;
+    }
+    &.show-rec::after {
+      content: 'REC';
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #dc2626;
+      color: white;
+      padding: 4px 8px;
+      font-size: 10px;
+      font-weight: bold;
+      font-family: 'Courier New', monospace;
+      letter-spacing: 1px;
+      z-index: 2;
+      border-radius: 2px;
+      animation: recording-blink 2s infinite;
+      display: block;
+    }
+    &.show-warning::after {
+      content: 'NO STREAM';
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #e53935;
+      color: #fff;
+      padding: 4px 8px;
+      font-size: 10px;
+      font-weight: bold;
+      font-family: 'Courier New', monospace;
+      letter-spacing: 1px;
+      z-index: 2;
+      border-radius: 2px;
+      animation: none;
+      display: block;
+    }
+  }
+  
+  @keyframes recording-blink {
+    0%, 70% { opacity: 1; }
+    71%, 100% { opacity: 0.3; }
+  }
+  
+  .stream-error {
+    color: #dc2626;
+    background: #fef2f2;
+    border: 2px solid #fecaca;
+    padding: 12px 16px;
+    margin: 16px;
+    font-size: 12px;
+    font-weight: 600;
+    text-align: center;
+    font-family: 'Courier New', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  .btn.btn-secondary {
+    display: block;
+    margin: 2rem auto 0 auto;
+    padding: 12px 24px;
+    font-size: 12px;
+    font-weight: 600;
+    background: #f1f5f9;
+    color: #334155;
+    border: 2px solid #cbd5e0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: 'Courier New', monospace;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  
+    &:hover {
+      background: #e2e8f0;
+      border-color: #94a3b8;
+      color: #1e293b;
+    }
+  }
+  
+  // Responsive design
+  @media (max-width: 768px) {
+    .all-streams-container {
+      padding: 1rem 0;
+    }
+    
+    .stream-header {
+      padding: 10px 12px;
+    }
+    
+    .stream-body {
+      min-height: 300px;
+    }
+    
+    .all-streams-title {
+      font-size: 1.3rem;
+    }
+  }

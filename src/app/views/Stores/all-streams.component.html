@@ -1,0 +1,49 @@
+<div class="all-streams-container">
+    <div class="streams-grid">
+        <ng-container *ngFor="let camera of availableCameras">
+            <div class="stream-card">
+                <div class="stream-header">
+                    <div class="stream-status" *ngIf="!camera.streamError && camera.streamUrl" [ngClass]="{
+                        'status-active': camera.status === 'ACTIVE',
+                        'status-inactive': camera.status === 'INACTIVE',
+                        'status-maintenance': camera.status === 'MAINTENANCE'
+                    }">●</div>
+                    <div class="stream-status" *ngIf="camera.streamError || !camera.streamUrl"
+                        style="color:#e53935;font-size:1.5rem;">
+                        <span style="font-size:1.2rem;">&#9888;</span>
+                    </div>
+                    <div class="stream-info">
+                        <div class="stream-name">{{ camera.cameraName }}</div>
+                        <div class="stream-meta">
+                            ID: {{ camera.id }} | {{ camera.resolutionWidth }}x{{ camera.resolutionHeight }} | {{
+                            camera.status }}
+                        </div>
+                        <div class="stream-meta" *ngIf="getZoneNamesForCamera(camera.id)">
+                            Zones: {{ getZoneNamesForCamera(camera.id) }}
+                        </div>
+                    </div>
+                    <div class="stream-header-actions">
+                        <button class="btn btn-outline-primary btn-sm" (click)="defineZoneCoordinates(camera)">Define
+                            Zone</button>
+                        <button class="btn btn-outline-secondary btn-sm" (click)="toggleCoordinates(camera)">Toggle
+                            Coords</button>
+                    </div>
+                </div>
+                <div class="stream-body" [ngClass]="{
+                  'show-rec': camera.streamUrl && !camera.streamError,
+                  'show-warning': camera.streamError || !camera.streamUrl
+                }">
+                    <ng-container *ngIf="camera.streamUrl; else noStream">
+                        <app-hls-video-player [src]="camera.streamUrl"
+                            (error)="onStreamErrorAll(camera)"></app-hls-video-player>
+                        <div *ngIf="camera.streamError" class="stream-error">{{ camera.streamError }}</div>
+                    </ng-container>
+                    <ng-template #noStream>
+                        <div class="stream-error">No stream URL set for this camera.</div>
+                    </ng-template>
+                </div>
+            </div>
+        </ng-container>
+    </div>
+    <button class="btn btn-secondary mt-4" (click)="goBackToStore()">Back to Store</button>
+</div>

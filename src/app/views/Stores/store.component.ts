@@ -1,8 +1,10 @@
 import { Component, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HlsVideoPlayerComponent } from './hls-video-player.component';
+import { Router } from '@angular/router';
 
-interface Camera {
+export interface Camera {
   id: string;
   cameraName: string;
   resolutionWidth: number;
@@ -12,6 +14,20 @@ interface Camera {
   icon?: string;
   isActive?: boolean;
   showMenu?: boolean;
+  streamError?: string;
+}
+
+export interface CameraZoneMask {
+  maskId: string;
+  maskCoordinates: string;
+  calibrationPoints: string;
+  isPrimary: boolean;
+  coveragePercentage: number;
+  confidenceLevel: number;
+  createdAt: string; // ISO string for LocalDateTime
+  updatedAt: string;
+  cameraId: string;
+  zoneId: string;
 }
 
 interface Zone {
@@ -29,7 +45,7 @@ interface Zone {
 @Component({
   selector: 'app-store-map',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, HlsVideoPlayerComponent],
   templateUrl: './store.component.html',
   styleUrls: ['./store.component.scss']
 })
@@ -37,18 +53,19 @@ export class StoreComponent implements OnInit {
   // Lists state
   availableCameras: Camera[] = [];
   zones: Zone[] = [];
-  
+  cameraZoneMasks: CameraZoneMask[] = [];
+
   // Drag state
   draggedCamera: Camera | null = null;
   dragOffset = { x: 0, y: 0 };
-  
+
   // Resize state
   isResizing = false;
   resizeDirection: 'e' | 's' | 'se' | null = null;
   activeZone: Zone | null = null;
   resizeStartPos = { x: 0, y: 0 };
   resizeStartDimensions = { width: 0, height: 0 };
-  
+
   // Dialog state
   showCameraDialog = false;
   showZoneDialog = false;
@@ -89,7 +106,12 @@ export class StoreComponent implements OnInit {
   isDraggingZone = false;
   draggedZone: Zone | null = null;
 
-  constructor() {}
+  // Stream dialog state
+  showStreamDialog = false;
+  streamUrl: string | null = null;
+  streamError: string | null = null;
+
+  constructor(private router: Router) {}
 
   // Sample data for development/demo
   ngOnInit(): void {
@@ -166,7 +188,7 @@ export class StoreComponent implements OnInit {
       this.errorMessage = 'A camera with this ID already exists';
       return;
     }
-    this.availableCameras.push({ 
+    this.availableCameras.push({
       ...this.newCamera,
       isActive: this.newCamera.status === 'ACTIVE'
     });
@@ -463,6 +485,21 @@ export class StoreComponent implements OnInit {
         if (availCamera) {
           availCamera.isActive = true;
         }
+        // Create CameraZoneMask link
+        const now = new Date().toISOString();
+        this.cameraZoneMasks.push({
+          maskId: `${cameraId}_${dropZone.id}`,
+          maskCoordinates: '',
+          calibrationPoints: '',
+          isPrimary: false,
+          coveragePercentage: 0,
+          confidenceLevel: 0,
+          createdAt: now,
+          updatedAt: now,
+          cameraId,
+          zoneId: dropZone.id
+        });
+        this.saveCameraZoneDataToLocalStorage();
       }
       return;
     }
@@ -485,6 +522,12 @@ export class StoreComponent implements OnInit {
     }
   }
 
+  saveCameraZoneDataToLocalStorage() {
+    localStorage.setItem('availableCameras', JSON.stringify(this.availableCameras));
+    localStorage.setItem('zones', JSON.stringify(this.zones));
+    localStorage.setItem('cameraZoneMasks', JSON.stringify(this.cameraZoneMasks));
+  }
+
   private findZoneAtPoint(x: number, y: number): Zone | null {
     return this.zones.find((zone: Zone) => {
       const pos = zone.position;
@@ -500,9 +543,9 @@ export class StoreComponent implements OnInit {
     }
   }
 
-  onZoneDragEnd(event: DragEvent, zone: Zone) {
-    // No-op for now, but can be used for visual feedback
-  }
+  // onZoneDragEnd(event: DragEvent, zone: Zone) {
+  //   // No-op for now, but can be used for visual feedback
+  // }
 
   saveMap() {
     // For now, just log the current state. Replace with real save logic as needed.
@@ -591,5 +634,27 @@ export class StoreComponent implements OnInit {
   closeViewZoneDialog() {
     this.showViewZoneDialog = false;
     this.viewZoneData = null;
+  }
+
+  // Camera options menu actions
+  viewStream(camera: Camera) {
+    this.streamError = null;
+    this.streamUrl = camera.streamUrl;
+    this.showStreamDialog = true;
+  }
+
+  closeStreamDialog() {
+    this.showStreamDialog = false;
+    this.streamUrl = null;
+    this.streamError = null;
+  }
+
+  onStreamError(error: any) {
+    this.streamError = typeof error === 'string' ? error : 'Failed to load the video stream.';
+  }
+
+  goToAllStreams() {
+    this.saveCameraZoneDataToLocalStorage();
+    this.router.navigate(['/all-streams']);
   }
 }
