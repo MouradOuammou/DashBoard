@@ -117,11 +117,7 @@ export class DefaultHeaderComponent extends HeaderComponent {
   ];
 
   // Notifications data
-  public newNotifications = [
-    { id: 0, title: 'New user registered', icon: 'cilUserFollow', color: 'success', time: '10 min ago' },
-    { id: 1, title: 'User deleted', icon: 'cilUserUnfollow', color: 'danger', time: '1 hour ago' },
-    { id: 2, title: 'Sales report is ready', icon: 'cilChartPie', color: 'info', time: 'Yesterday' }
-  ];
+  public newNotifications = [];
 
   // System status data
   public newStatus = [

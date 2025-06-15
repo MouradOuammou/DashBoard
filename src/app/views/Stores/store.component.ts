@@ -543,9 +543,9 @@ export class StoreComponent implements OnInit {
     }
   }
 
-  // onZoneDragEnd(event: DragEvent, zone: Zone) {
-  //   // No-op for now, but can be used for visual feedback
-  // }
+  onZoneDragEnd(event: DragEvent, zone: Zone) {
+    // No-op for now, but can be used for visual feedback
+  }
 
   saveMap() {
     // For now, just log the current state. Replace with real save logic as needed.

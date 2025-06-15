@@ -24,18 +24,56 @@
                     </div>
                     <div class="stream-header-actions">
                         <button class="btn btn-outline-primary btn-sm" (click)="defineZoneCoordinates(camera)">Define
-                            Zone</button>
+                            Zone Mask</button>
                         <button class="btn btn-outline-secondary btn-sm" (click)="toggleCoordinates(camera)">Toggle
                             Coords</button>
+                        <button class="btn btn-outline-info btn-sm" (click)="toggleViewZoneMask(camera)">View Zone
+                            Mask</button>
                     </div>
                 </div>
                 <div class="stream-body" [ngClass]="{
                   'show-rec': camera.streamUrl && !camera.streamError,
-                  'show-warning': camera.streamError || !camera.streamUrl
+                  'show-warning': camera.streamError || !camera.streamUrl,
+                  'edit-mode': isEditMode(camera)
                 }">
                     <ng-container *ngIf="camera.streamUrl; else noStream">
-                        <app-hls-video-player [src]="camera.streamUrl"
-                            (error)="onStreamErrorAll(camera)"></app-hls-video-player>
+                        <div style="position:relative;width:100%;height:100%;">
+                            <app-hls-video-player [src]="camera.streamUrl"
+                                [attr.controls]="isEditMode(camera) ? null : true"
+                                [attr.autoplay]="isEditMode(camera) ? null : true" (error)="onStreamErrorAll(camera)"
+                                [style.filter]="isEditMode(camera) ? 'grayscale(0.7) brightness(0.7)' : ''"
+                                [style.pointer-events]="isEditMode(camera) ? 'none' : 'auto'">
+                            </app-hls-video-player>
+                            <canvas *ngIf="isEditMode(camera)" #videoOverlay
+                                style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:auto;z-index:10;"
+                                width="640" height="360"></canvas>
+                            <div *ngIf="isEditMode(camera) && (drawingPoints.length > 0 || isSaveMode)"
+                                class="edit-overlay-ui">
+                                <button class="btn btn-outline-danger btn-xs" (click)="clearOverlay()">Clear</button>
+                                <button class="btn btn-outline-success btn-xs" (click)="finishDrawing()"
+                                    [disabled]="drawingPoints.length < 3">Done</button>
+                                <button class="btn btn-outline-primary btn-xs" *ngIf="isSaveMode"
+                                    (click)="saveOverlay()">Save</button>
+                            </div>
+                            <div *ngIf="showZoneSelect && isEditMode(camera)" class="zone-select-modal">
+                                <div class="zone-select-content">
+                                    <label for="zoneSelect">Select related zone:</label>
+                                    <select id="zoneSelect" [(ngModel)]="selectedZoneId">
+                                        <option [ngValue]="null">-- Select Zone --</option>
+                                        <option *ngFor="let zone of zones | cameraZones:editModeCameraId"
+                                            [ngValue]="zone.id">{{ zone.zoneName }}</option>
+                                    </select>
+                                    <div class="zone-select-actions">
+                                        <button class="btn btn-primary"
+                                            (click)="confirmZoneSelection()">Confirm</button>
+                                        <button class="btn btn-secondary m-0"
+                                            (click)="cancelZoneSelection()">Cancel</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div *ngIf="isEditMode(camera)" class="edit-mode-hint">Edit mode: Click to add points. Click
+                                Done when finished.</div>
+                        </div>
                         <div *ngIf="camera.streamError" class="stream-error">{{ camera.streamError }}</div>
                     </ng-container>
                     <ng-template #noStream>

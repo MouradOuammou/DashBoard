@@ -13,6 +13,8 @@ export class HlsVideoPlayerComponent implements AfterViewInit, OnDestroy {
   @Output() error = new EventEmitter<string>();
   @ViewChild('videoPlayer', { static: true }) videoRef!: ElementRef<HTMLVideoElement>;
   private hls?: Hls;
+  private errorTimeout?: any;
+  private hasPlayed = false;
 
   ngAfterViewInit() {
     const video = this.videoRef.nativeElement;
@@ -20,6 +22,22 @@ export class HlsVideoPlayerComponent implements AfterViewInit, OnDestroy {
       this.error.emit('No stream URL provided.');
       return;
     }
+    // Set a timeout to emit error only if video doesn't start playing in time
+    this.errorTimeout = setTimeout(() => {
+      if (!this.hasPlayed) {
+        this.error.emit('Failed to load the video stream.');
+      }
+    }, 5000); // 5 seconds
+
+    const onPlaying = () => {
+      this.hasPlayed = true;
+      if (this.errorTimeout) {
+        clearTimeout(this.errorTimeout);
+        this.errorTimeout = undefined;
+      }
+    };
+    video.addEventListener('playing', onPlaying);
+
     if (video.canPlayType('application/vnd.apple.mpegurl')) {
       video.src = this.src;
       video.play().catch(() => this.error.emit('Failed to play the video stream.'));
@@ -29,7 +47,10 @@ export class HlsVideoPlayerComponent implements AfterViewInit, OnDestroy {
       this.hls.attachMedia(video);
       this.hls.on(Hls.Events.ERROR, (event, data) => {
         if (data.fatal) {
-          this.error.emit('Failed to load the video stream.');
+          // Only emit error if not already playing
+          if (!this.hasPlayed) {
+            this.error.emit('Failed to load the video stream.');
+          }
         }
       });
       this.hls.on(Hls.Events.MANIFEST_PARSED, () => {
@@ -44,5 +65,9 @@ export class HlsVideoPlayerComponent implements AfterViewInit, OnDestroy {
     if (this.hls) {
       this.hls.destroy();
     }
+    if (this.errorTimeout) {
+      clearTimeout(this.errorTimeout);
+    }
+    this.videoRef?.nativeElement?.removeEventListener('playing', () => {});
   }
 }
