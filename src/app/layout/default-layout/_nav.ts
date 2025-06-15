@@ -31,25 +31,25 @@ export const navItems: INavData[] = [
       }
     ]
   },
-  {
-    name: 'Predictions',
-    iconComponent: { name: 'cil-chart-line' },
-    children: [
-      {
-        name: 'Staff Planning',
-        url: '/Predictions/Staff_Planning',
-        iconComponent: { name: 'cil-calendar' }
-      },
-      {
-        name: 'Shelf Optimization',
-        url: '/Predictions/Shelf_Optimization',
-        iconComponent: { name: 'cil-sort-ascending' }
-      }
-    ]
-  },
+  // {
+  //   name: 'Predictions',
+  //   iconComponent: { name: 'cil-chart-line' },
+  //   children: [
+  //     {
+  //       name: 'Staff Planning',
+  //       url: '/Predictions/Staff_Planning',
+  //       iconComponent: { name: 'cil-calendar' }
+  //     },
+  //     {
+  //       name: 'Shelf Optimization',
+  //       url: '/Predictions/Shelf_Optimization',
+  //       iconComponent: { name: 'cil-sort-ascending' }
+  //     }
+  //   ]
+  // },
   {
     name: 'Stores',
-    iconComponent: { name: 'cil-building' },
+    iconComponent: { name: 'cil-map' },
         url: '/Store',
 
   },

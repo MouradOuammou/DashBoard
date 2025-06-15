@@ -1,14 +1,8 @@
 <!-- Main Header Container -->
 <c-container [fluid]="true" class="border-bottom px-4 bg-white shadow-sm sticky-top header-container">
   <!-- Sidebar Toggle Button -->
-  <button
-    [cSidebarToggle]="sidebarId()"
-    cHeaderToggler
-    class="btn btn-hover"
-    toggle="visible"
-    style="margin-inline-start: -14px;"
-    aria-label="Toggle sidebar navigation"
-  >
+  <button [cSidebarToggle]="sidebarId()" cHeaderToggler class="btn btn-hover" toggle="visible"
+    style="margin-inline-start: -14px;" aria-label="Toggle sidebar navigation">
     <svg cIcon name="cil-menu" size="lg" class="text-primary"></svg>
   </button>
 
@@ -30,7 +24,8 @@
     <c-dropdown placement="bottom-end" variant="nav-item">
       <button cDropdownToggle class="btn btn-link py-0 px-2 position-relative" aria-label="Notifications">
         <svg cIcon name="cil-bell" size="lg"></svg>
-        <c-badge *ngIf="newNotifications.length > 0" class="position-absolute top-0 start-100 translate-middle" color="danger" shape="rounded-pill">
+        <c-badge *ngIf="newNotifications.length > 0" class="position-absolute top-0 start-100 translate-middle"
+          color="danger" shape="rounded-pill">
           {{ newNotifications.length }}
         </c-badge>
       </button>
@@ -39,8 +34,8 @@
           <h6 class="mb-0">Notifications ({{ newNotifications.length }})</h6>
         </div>
         <div class="list-group list-group-flush">
-          
-       <!-- @if (newNotifications.length>0) {
+
+          <!-- @if (newNotifications.length>0) {
         <a *ngFor="let notification of newNotifications; trackBy: trackByNotification" href="#"
           class="list-group-item list-group-item-action border-bottom">
           <div class="d-flex align-items-center">
@@ -79,13 +74,8 @@
   <!-- User Menu -->
   <c-dropdown [popperOptions]="{ placement: 'bottom-end' }" variant="nav-item">
     <button cDropdownToggle class="d-flex align-items-center btn btn-link py-0 ps-2 pe-0" aria-label="User menu">
-      <c-avatar
-        shape="rounded-circle"
-        size="md"
-        src="./assets/images/avatars/8.jpg"
-        status="success"
-        class="border-2 border-white"
-      />
+      <c-avatar shape="rounded-circle" size="md" src="./assets/images/avatars/8.jpg" status="success"
+        class="border-2 border-white" />
       <span class="ms-2 d-none d-md-inline text-dark">Admin</span>
       <svg cIcon name="cil-chevron-bottom" class="ms-1 text-muted" size="sm"></svg>
     </button>
@@ -116,19 +106,6 @@
           <svg cIcon name="cil-applications-settings" class="me-2"></svg>
           Modules
         </h6>
-      </li>
-      <li>
-        <a cDropdownItem routerLink="/analytics" class="d-flex align-items-center">
-          <svg cIcon class="me-2" name="cil-chart-pie"></svg>
-          Analytics
-          <c-badge class="ms-2" color="info">New</c-badge>
-        </a>
-      </li>
-      <li>
-        <a cDropdownItem routerLink="/predictions" class="d-flex align-items-center">
-          <svg cIcon class="me-2" name="cil-chart-line"></svg>
-          Predictions
-        </a>
       </li>
       <li>
         <a cDropdownItem routerLink="/store" class="d-flex align-items-center">
@@ -162,18 +139,14 @@
     </button>
     <div cDropdownMenu class="theme-dropdown">
       @for (mode of colorModes; track mode.name) {
-        <button
-          (click)="colorMode.set(mode.name)"
-          [active]="colorMode() === mode.name"
-          cDropdownItem
-          class="d-flex align-items-center"
-        >
-          <svg cIcon class="me-2" [name]="mode.icon"></svg>
-          {{ mode.text }}
-          @if (mode.name === colorMode()) {
-            <svg cIcon name="cil-check" class="ms-2 text-success"></svg>
-          }
-        </button>
+      <button (click)="colorMode.set(mode.name)" [active]="colorMode() === mode.name" cDropdownItem
+        class="d-flex align-items-center">
+        <svg cIcon class="me-2" [name]="mode.icon"></svg>
+        {{ mode.text }}
+        @if (mode.name === colorMode()) {
+        <svg cIcon name="cil-check" class="ms-2 text-success"></svg>
+        }
+      </button>
       }
     </div>
   </c-dropdown>

@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import {FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule} from '@angular/forms';
+import * as bootstrap from 'bootstrap/dist/js/bootstrap.bundle.js';
 
 interface User {
   id: string;
@@ -13,12 +14,10 @@ interface User {
   permissions?: string[]; // Ajout des permissions
 }
 
-declare var bootstrap: any;
-
 @Component({
   selector: 'app-users',
   standalone: true,
-  imports: [CommonModule, HttpClientModule, ReactiveFormsModule],
+  imports: [CommonModule, HttpClientModule, ReactiveFormsModule, FormsModule],
   templateUrl: './users.component.html',
   styleUrls: ['./users.component.scss']
 })
@@ -32,12 +31,21 @@ export class UsersComponent implements OnInit {
   // Pour les modals et formulaires
   userForm!: FormGroup;
   isEditMode: boolean = false;
+  isViewMode: boolean = false;
   userToDelete: User | null = null;
   selectedUser: User | null = null;
   userModal: any;
   deleteModal: any;
   detailsModal: any;
   nextId: number = 8; // Pour générer de nouveaux IDs
+  showAddUserModal = false;
+  newUser: User = { id: '', nom: '', prenom: '', role: '', email: '', phone: '' };
+
+  // Rôles et permissions
+  showAddRoleModal = false;
+  showViewRolesModal = false;
+  newRoleName = '';
+  roles: string[] = ['ADMIN', 'MODERATOR', 'USER'];
 
   // Définition des règles disponibles
   adminRules = [
@@ -52,6 +60,29 @@ export class UsersComponent implements OnInit {
     'creation_contenu',
     'edition_propre_contenu'
   ];
+
+  editRoleIndex: number | null = null;
+  editRoleValue: string = '';
+
+  // Add a permissions list for roles
+  permissionsList: string[] = [
+    'settings',
+    'store',
+    'dashboard',
+    'analytics',
+    'users',
+    'products',
+    'orders',
+    'reports'
+  ];
+
+  // Track permissions for new/edit role
+  newRolePermissions: string[] = [];
+  viewRolePermissions: string[] = [];
+
+  // Add state for the view permissions modal
+  showViewRolePermissionsModal: boolean = false;
+  selectedRoleName: string = '';
 
   constructor(
     private http: HttpClient,
@@ -149,25 +180,27 @@ export class UsersComponent implements OnInit {
 
   // Fonctions pour les modals
   openAddUserModal(): void {
-    this.isEditMode = false;
-    this.userForm.reset();
-    this.userForm.get('role')?.setValue('');
-
-    // Utiliser Bootstrap 5 Modal
-    this.userModal = new bootstrap.Modal(document.getElementById('userModal'));
-    this.userModal.show();
+    this.showAddUserModal = true;
+    this.newUser = { id: '', nom: '', prenom: '', role: '', email: '', phone: '' };
   }
 
-  viewUserDetails(user: User): void {
-    this.selectedUser = {...user};
-
-    // Ouvrir le modal de détails
-    this.detailsModal = new bootstrap.Modal(document.getElementById('detailsModal'));
-    this.detailsModal.show();
+  closeAddUserModal(): void {
+    this.showAddUserModal = false;
   }
 
-  editUser(user: User): void {
-    this.isEditMode = true;
+  addUser(): void {
+    if (!this.newUser.nom || !this.newUser.prenom || !this.newUser.email || !this.newUser.phone || !this.newUser.role) {
+      return;
+    }
+    const newId = (this.nextId++).toString();
+    const user: User = { ...this.newUser, id: newId };
+    this.users.push(user);
+    this.closeAddUserModal();
+  }
+
+  // Unified modal logic
+  openUserModal(user: User, mode: 'view' | 'edit') {
+    this.selectedUser = { ...user };
     this.userForm.patchValue({
       id: user.id,
       prenom: user.prenom,
@@ -176,15 +209,34 @@ export class UsersComponent implements OnInit {
       email: user.email,
       phone: user.phone
     });
-
-    // Fermer le modal de détails s'il est ouvert
-    if (this.detailsModal) {
-      this.detailsModal.hide();
-    }
-
-    // Ouvrir le modal d'édition
+    this.isViewMode = mode === 'view';
+    this.isEditMode = mode === 'edit';
     this.userModal = new bootstrap.Modal(document.getElementById('userModal'));
     this.userModal.show();
+  }
+
+  closeUserModal() {
+    this.isViewMode = false;
+    this.isEditMode = false;
+    this.selectedUser = null;
+    this.userForm.reset();
+    if (this.userModal) {
+      this.userModal.hide();
+    }
+  }
+
+  switchToEditMode() {
+    this.isViewMode = false;
+    this.isEditMode = true;
+  }
+
+  // Refactor view/edit actions to use unified modal
+  viewUserDetails(user: User): void {
+    this.openUserModal(user, 'view');
+  }
+
+  editUser(user: User): void {
+    this.openUserModal(user, 'edit');
   }
 
   deleteUser(userId: string): void {
@@ -369,4 +421,109 @@ export class UsersComponent implements OnInit {
 viewAllRoles(event: Event) {
   event.preventDefault();
 }
+
+openAddRoleDialog(): void {
+  this.showAddRoleModal = true;
+  this.newRoleName = '';
+}
+closeAddRoleDialog(): void {
+  this.showAddRoleModal = false;
+}
+addRole(): void {
+  if (this.newRoleName && !this.roles.includes(this.newRoleName)) {
+    this.roles.push(this.newRoleName);
+    // Here you would save the permissions for the role (e.g., in a map/object or backend)
+    // For demo, just log them
+    console.log('Role:', this.newRoleName, 'Permissions:', this.newRolePermissions);
+  }
+  this.closeAddRoleDialog();
+  this.newRolePermissions = [];
+}
+openViewRolesDialog(): void {
+  this.showViewRolesModal = true;
+}
+closeViewRolesDialog(): void {
+  this.showViewRolesModal = false;
+}
+closeDropdown(): void {
+    // Close the Bootstrap dropdown programmatically
+    const dropdown = document.getElementById('manageRolesDropdown');
+    if (dropdown) {
+      const instance = (window as any).bootstrap?.Dropdown?.getOrCreateInstance(dropdown);
+      if (instance) {
+        instance.hide();
+      }
+    }
+  }
+
+  onManageRoleSelect(event: Event): void {
+    const value = (event.target as HTMLSelectElement).value;
+    if (value === 'add') {
+      this.openAddRoleDialog();
+    } else if (value === 'view') {
+      this.openViewRolesDialog();
+    }
+    // Reset select to placeholder
+    setTimeout(() => {
+      (event.target as HTMLSelectElement).value = '';
+    }, 200);
+  }
+
+  // Gestion de l'édition et de la suppression des rôles
+  startEditRole(index: number, value: string): void {
+    this.editRoleIndex = index;
+    this.editRoleValue = value;
+  }
+  saveEditRole(index: number): void {
+    if (this.editRoleValue.trim() && !this.roles.includes(this.editRoleValue.trim())) {
+      this.roles[index] = this.editRoleValue.trim();
+    }
+    this.cancelEditRole();
+  }
+  cancelEditRole(): void {
+    this.editRoleIndex = null;
+    this.editRoleValue = '';
+  }
+  deleteRole(index: number): void {
+    this.roles.splice(index, 1);
+    this.cancelEditRole();
+  }
+
+  // Add a method to open the view permissions modal for a role
+  viewRolePermissionsDialog(role: string): void {
+    // For demo, assign some permissions based on role name (customize as needed)
+    if (role === 'ADMIN') {
+      this.viewRolePermissions = [...this.permissionsList];
+    } else if (role === 'MODERATOR') {
+      this.viewRolePermissions = ['dashboard', 'analytics', 'users'];
+    } else if (role === 'USER') {
+      this.viewRolePermissions = ['dashboard', 'store'];
+    } else {
+      // For custom roles, you may want to store permissions in a map/object
+      this.viewRolePermissions = [];
+    }
+    this.selectedRoleName = role;
+    this.showViewRolePermissionsModal = true;
+  }
+
+  closeViewRolePermissionsDialog(): void {
+    this.showViewRolePermissionsModal = false;
+    this.selectedRoleName = '';
+    this.viewRolePermissions = [];
+  }
+
+  // Add a handler for permission checkbox changes
+  onPermissionCheckboxChange(event: Event, perm: string): void {
+    const checked = (event.target as HTMLInputElement).checked;
+    if (checked) {
+      if (!this.newRolePermissions.includes(perm)) {
+        this.newRolePermissions.push(perm);
+      }
+    } else {
+      const idx = this.newRolePermissions.indexOf(perm);
+      if (idx > -1) {
+        this.newRolePermissions.splice(idx, 1);
+      }
+    }
+  }
 }

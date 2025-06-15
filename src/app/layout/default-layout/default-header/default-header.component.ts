@@ -76,10 +76,9 @@ export class DefaultHeaderComponent extends HeaderComponent {
 
   // Navigation items
   navItems = [
-    { link: '/dashboard', icon: 'cil-speedometer', label: 'Dashboard' },
-    { link: '/analytics', icon: 'cil-chart-pie', label: 'Analytics' },
-    { link: '/predictions', icon: 'cil-chart-line', label: 'Predictions' },
-    { link: '/store', icon: 'cil-shop', label: 'Store' }
+    { link: '/Dashboard', icon: 'cil-speedometer', label: 'Dashboard' },
+    { link: '/Store', icon: 'cil-map', label: 'Store' },
+    { link: '/Settings', icon: 'cil-settings', label: 'Settings' }
   ];
 
   // Messages data

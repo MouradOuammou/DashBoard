@@ -1,67 +1,19 @@
 <div class="container-fluid">
   <div class="row mb-4">
-    <div class="col-md-8">
-      <h2 class="fw-bold text-primary">User List</h2>
-    </div>
-    <div class="col-md-4 text-end">
+
+    <div class="text-end">
       <button class="btn btn-primary me-2" (click)="openAddUserModal()">
         <i class="bi bi-plus-circle"></i> Add User
       </button>
-      <div class="btn-group me-2">
-        <button class="btn btn-info text-white dropdown-toggle" type="button" id="addRulesDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-          <i class="bi bi-shield-plus"></i> Manage Roles
-        </button>
-        <ul class="dropdown-menu" aria-labelledby="addRulesDropdown">
-          <li>
-            <h6 class="dropdown-header">
-              <i class="bi bi-person-gear me-2"></i>Available Roles
-            </h6>
-          </li>
-          <li><hr class="dropdown-divider"></li>
-          <li>
-            <a class="dropdown-item" href="#" (click)="addAdminRules($event)">
-              <div class="d-flex align-items-center">
-                <i class="bi bi-shield-lock me-3 text-danger"></i>
-                <div>
-                  <div class="fw-bold">Admin</div>
-                  <small class="text-muted">Full system access</small>
-                </div>
-              </div>
-            </a>
-          </li>
-          <li>
-            <a class="dropdown-item" href="#" (click)="addModeratorRules($event)">
-              <div class="d-flex align-items-center">
-                <i class="bi bi-shield-check me-3 text-warning"></i>
-                <div>
-                  <div class="fw-bold">Moderator</div>
-                  <small class="text-muted">Content moderation</small>
-                </div>
-              </div>
-            </a>
-          </li>
-          <li>
-            <a class="dropdown-item" href="#" (click)="addUserRules($event)">
-              <div class="d-flex align-items-center">
-                <i class="bi bi-person me-3 text-success"></i>
-                <div>
-                  <div class="fw-bold">User</div>
-                  <small class="text-muted">Standard access</small>
-                </div>
-              </div>
-            </a>
-          </li>
-          <li><hr class="dropdown-divider"></li>
-          <li>
-            <a class="dropdown-item" href="#" (click)="viewAllRoles($event)">
-              <i class="bi bi-list-ul me-2"></i>View All Roles
-            </a>
-          </li>
-        </ul>
+      <div class="me-2 d-inline-block" style="min-width: 200px;">
+        <select class="form-select btn btn-info text-white"
+          style="width: 180px; display: inline-block; background-color: #17a2b8; color: #fff; border: none;"
+          (change)="onManageRoleSelect($event)">
+          <option value="" hidden selected disabled>Manage Roles</option>
+          <option value="add">Add Role</option>
+          <option value="view">View Role List</option>
+        </select>
       </div>
-      <button class="btn btn-outline-secondary" (click)="toggleDataSource()">
-        <i class="bi bi-arrow-repeat"></i> {{ useMockData ? 'Use API' : 'Use Mock Data' }}
-      </button>
     </div>
   </div>
 
@@ -80,12 +32,13 @@
   </div>
 
   <!-- Card container for table -->
-  <div *ngIf="!loading && !error" class="card shadow-sm">
+  <div *ngIf="!loading && !error" class="card shadow-sm mb-4">
+    <div class="card-header" style="background-color: #5856d6; color: #fff;">User List</div>
     <div class="card-body p-0">
       <!-- Table -->
       <div class="table-responsive">
-        <table class="table table-striped table-hover user-table mb-0">
-          <thead class="table-dark">
+        <table class="table user-table align-middle text-center schedule-table">
+          <thead class="table-light">
             <tr>
               <th scope="col" class="ps-4">ID</th>
               <th scope="col">Last Name</th>
@@ -104,8 +57,7 @@
               <td>{{ user.email }}</td>
               <td>{{ formatPhoneNumber(user.phone) }}</td>
               <td>
-                <span class="badge rounded-pill"
-                      [ngClass]="{
+                <span class="badge rounded-pill" [ngClass]="{
                         'bg-danger': user.role === 'ADMIN',
                         'bg-success': user.role === 'USER',
                         'bg-warning text-dark': user.role === 'MODERATOR'
@@ -161,60 +113,64 @@
     </nav>
   </div>
 
-  <!-- User Details Modal -->
-  <div class="modal fade" id="detailsModal" tabindex="-1" aria-labelledby="detailsModalLabel" aria-hidden="true">
+  <!-- Unified User Modal (View/Edit) -->
+  <div class="modal fade" id="userModal" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
-        <div   class="modal-header bg-info text-white">
-          <h5 class="modal-title" id="detailsModalLabel">User Details</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div class="modal-header">
+          <h5 class="modal-title" id="userModalLabel">
+            {{ isViewMode ? 'User Details' : 'Edit User' }}
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+            (click)="closeUserModal()"></button>
         </div>
-        <div class="modal-body" *ngIf="selectedUser">
-          <div class="text-center mb-4">
-            <div class="avatar-circle">
-              <span class="avatar-initials">{{ selectedUser.prenom.charAt(0) }}{{ selectedUser.nom.charAt(0) }}</span>
+        <form [formGroup]="userForm" (ngSubmit)="isEditMode ? saveUser() : null">
+          <div class="modal-body" *ngIf="selectedUser">
+            <div class="text-center mb-4">
+              <div class="avatar-circle">
+                <span class="avatar-initials">{{ selectedUser.prenom.charAt(0) }}{{ selectedUser.nom.charAt(0) }}</span>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">ID</label>
+              <input class="form-control" formControlName="id" [readonly]="true">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">First Name</label>
+              <input class="form-control" formControlName="prenom" [readonly]="isViewMode">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Last Name</label>
+              <input class="form-control" formControlName="nom" [readonly]="isViewMode">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Email</label>
+              <input class="form-control" formControlName="email" [readonly]="isViewMode">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Phone</label>
+              <input class="form-control" formControlName="phone" [readonly]="isViewMode">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Role</label>
+              <select class="form-select" formControlName="role" [disabled]="isViewMode">
+                <option value="ADMIN">Admin</option>
+                <option value="MODERATOR">Moderator</option>
+                <option value="USER">User</option>
+              </select>
             </div>
           </div>
-          <div class="card mb-3">
-            <ul class="list-group list-group-flush">
-              <li class="list-group-item d-flex justify-content-between">
-                <span class="fw-bold">ID:</span>
-                <span>{{ selectedUser.id }}</span>
-              </li>
-              <li class="list-group-item d-flex justify-content-between">
-                <span class="fw-bold">First Name:</span>
-                <span>{{ selectedUser.prenom }}</span>
-              </li>
-              <li class="list-group-item d-flex justify-content-between">
-                <span class="fw-bold">Last Name:</span>
-                <span>{{ selectedUser.nom }}</span>
-              </li>
-              <li class="list-group-item d-flex justify-content-between">
-                <span class="fw-bold">Email:</span>
-                <span>{{ selectedUser.email }}</span>
-              </li>
-              <li class="list-group-item d-flex justify-content-between">
-                <span class="fw-bold">Phone:</span>
-                <span>{{ formatPhoneNumber(selectedUser.phone) }}</span>
-              </li>
-              <li class="list-group-item d-flex justify-content-between">
-                <span class="fw-bold">Role:</span>
-                <span class="badge rounded-pill"
-                      [ngClass]="{
-                        'bg-danger': selectedUser.role === 'ADMIN',
-                        'bg-success': selectedUser.role === 'USER',
-                        'bg-warning text-dark': selectedUser.role === 'MODERATOR'
-                      }">{{ selectedUser.role }}</span>
-              </li>
-            </ul>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+              (click)="closeUserModal()">Close</button>
+            <button *ngIf="isViewMode" type="button" class="btn btn-primary" (click)="switchToEditMode()">
+              <i class="bi bi-pencil me-1"></i> Edit
+            </button>
+            <button *ngIf="isEditMode" type="submit" class="btn btn-primary" [disabled]="userForm.invalid">
+              <i class="bi bi-check me-1"></i> Save
+            </button>
           </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-warning" [disabled]="!selectedUser" (click)="editUser(selectedUser!)">
-            <i class="bi bi-pencil me-1"></i> Edit
-          </button>
-        </div>
+        </form>
       </div>
     </div>
   </div>
@@ -239,6 +195,148 @@
           <button type="button" class="btn btn-danger" (click)="confirmDelete()">
             <i class="bi bi-trash me-1"></i> Delete
           </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add User Modal -->
+  <div class="modal fade show" tabindex="-1"
+    [ngStyle]="{display: showAddUserModal ? 'block' : 'none', background: 'rgba(0,0,0,0.3)'}" *ngIf="showAddUserModal">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Add User</h5>
+          <button type="button" class="btn-close" (click)="closeAddUserModal()"></button>
+        </div>
+        <div class="modal-body">
+          <form #addUserForm="ngForm" (ngSubmit)="addUser()">
+            <div class="form-group mb-2">
+              <label>Last Name</label>
+              <input type="text" class="form-control" [(ngModel)]="newUser.nom" name="nom" required>
+            </div>
+            <div class="form-group mb-2">
+              <label>First Name</label>
+              <input type="text" class="form-control" [(ngModel)]="newUser.prenom" name="prenom" required>
+            </div>
+            <div class="form-group mb-2">
+              <label>Email</label>
+              <input type="email" class="form-control" [(ngModel)]="newUser.email" name="email" required>
+            </div>
+            <div class="form-group mb-2">
+              <label>Phone</label>
+              <input type="text" class="form-control" [(ngModel)]="newUser.phone" name="phone" required>
+            </div>
+            <div class="form-group mb-2">
+              <label>Role</label>
+              <select class="form-select" [(ngModel)]="newUser.role" name="role" required>
+                <option value="ADMIN">Admin</option>
+                <option value="MODERATOR">Moderator</option>
+                <option value="USER">User</option>
+              </select>
+            </div>
+            <div class="modal-footer px-0">
+              <button type="button" class="btn btn-secondary" (click)="closeAddUserModal()">Cancel</button>
+              <button type="submit" class="btn btn-primary" [disabled]="!addUserForm.form.valid">Add User</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Role Modal (with permissions checkboxes) -->
+  <div class="modal fade show" tabindex="-1"
+    [ngStyle]="{display: showAddRoleModal ? 'block' : 'none', background: 'rgba(0,0,0,0.3)'}" *ngIf="showAddRoleModal">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Add Role</h5>
+          <button type="button" class="btn-close" (click)="closeAddRoleDialog()"></button>
+        </div>
+        <div class="modal-body">
+          <form #addRoleForm="ngForm" (ngSubmit)="addRole()">
+            <div class="form-group mb-2">
+              <label>Role Name</label>
+              <input type="text" class="form-control" [(ngModel)]="newRoleName" name="roleName" required>
+            </div>
+            <div class="form-group mb-2">
+              <label>Permissions</label>
+              <div class="form-check" *ngFor="let perm of permissionsList">
+                <input class="form-check-input" type="checkbox" [value]="perm"
+                  [checked]="newRolePermissions.includes(perm)"
+                  (change)="onPermissionCheckboxChange($event, perm)">
+                <label class="form-check-label">{{ perm | titlecase }}</label>
+              </div>
+            </div>
+            <div class="modal-footer px-0">
+              <button type="button" class="btn btn-secondary" (click)="closeAddRoleDialog()">Cancel</button>
+              <button type="submit" class="btn btn-primary" [disabled]="!addRoleForm.form.valid">Add Role</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- View Role Permissions Modal -->
+  <div class="modal fade show" tabindex="-1"
+    [ngStyle]="{display: showViewRolePermissionsModal ? 'block' : 'none', background: 'rgba(0,0,0,0.3)'}"
+    *ngIf="showViewRolePermissionsModal">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Permissions for {{ selectedRoleName }}</h5>
+          <button type="button" class="btn-close" (click)="closeViewRolePermissionsDialog()"></button>
+        </div>
+        <div class="modal-body">
+          <ul class="list-group">
+            <li class="list-group-item" *ngFor="let perm of viewRolePermissions">
+              <i class="bi bi-check-circle text-success me-2"></i>{{ perm | titlecase }}
+            </li>
+            <li *ngIf="viewRolePermissions.length === 0" class="text-muted">No permissions assigned.</li>
+          </ul>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeViewRolePermissionsDialog()">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- View Role List Modal -->
+  <div class="modal fade show" tabindex="-1"
+    [ngStyle]="{display: showViewRolesModal ? 'block' : 'none', background: 'rgba(0,0,0,0.3)'}"
+    *ngIf="showViewRolesModal">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Role List</h5>
+          <button type="button" class="btn-close" (click)="closeViewRolesDialog()"></button>
+        </div>
+        <div class="modal-body">
+          <ul class="list-group">
+            <li class="list-group-item d-flex justify-content-between align-items-center"
+              *ngFor="let role of roles; let i = index">
+              <ng-container *ngIf="editRoleIndex !== i; else editRoleTpl">
+                <span>{{ role }}</span>
+                <span>
+                  <button class="btn btn-sm btn-outline-info me-1" (click)="viewRolePermissionsDialog(role); closeViewRolesDialog()"><i class="bi bi-eye"></i></button>
+                  <button class="btn btn-sm btn-outline-warning me-1" (click)="startEditRole(i, role)"><i class="bi bi-pencil"></i></button>
+                  <button class="btn btn-sm btn-outline-danger" (click)="deleteRole(i)"><i class="bi bi-trash"></i></button>
+                </span>
+              </ng-container>
+              <ng-template #editRoleTpl>
+                <input type="text" class="form-control form-control-sm d-inline-block w-auto me-2"
+                  [(ngModel)]="editRoleValue" style="width: 120px;">
+                <button class="btn btn-sm btn-success me-1" (click)="saveEditRole(i)"><i class="bi bi-check"></i></button>
+                <button class="btn btn-sm btn-secondary" (click)="cancelEditRole()"><i class="bi bi-x"></i></button>
+              </ng-template>
+            </li>
+          </ul>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeViewRolesDialog()">Close</button>
         </div>
       </div>
     </div>

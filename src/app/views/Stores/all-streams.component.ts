@@ -375,10 +375,6 @@ export class AllStreamsComponent {
     return this.editModeCameraId === camera.id;
   }
 
-  toggleCoordinates(camera: Camera) {
-    // TODO: Implement toggle coordinates overlay logic
-    alert('Toggle coordinates overlay for ' + camera.cameraName);
-  }
 }
 
 // Camera interface and demo camera data for AllStreamsComponent
