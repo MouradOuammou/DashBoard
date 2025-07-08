@@ -40,6 +40,7 @@ interface Zone {
   showMenu?: boolean;
   position: { x: number; y: number; width: number; height: number };
   color: string;
+  managerId?: string; // Add managerId property for zone manager select
 }
 
 @Component({
@@ -99,8 +100,9 @@ export class StoreComponent implements OnInit {
     isActive: true,
     cameras: [],
     position: { x: 10, y: 10, width: 200, height: 150 },
-    color: '#e9ecef'
-  };
+    color: '#e9ecef',
+    managerId: '' // Add managerId property for zone manager select
+  } as any;
 
   // Drag state for zones
   isDraggingZone = false;
@@ -111,18 +113,30 @@ export class StoreComponent implements OnInit {
   streamUrl: string | null = null;
   streamError: string | null = null;
 
+  // Sample users for zone manager select (copied from users page mock data)
+  sampleUsers = [
+    { id: '1', nom: 'Benali', prenom: 'Hicham', role: 'ADMIN', email: 'hicham.benali@example.com', phone: '+212 612345678' },
+    { id: '2', nom: 'Mourad', prenom: 'Ahmed', role: 'USER', email: 'ahmed.mourad@example.com', phone: '+212 623456789' },
+    { id: '3', nom: 'El Amrani', prenom: 'Sara', role: 'USER', email: 'sara.elamrani@example.com', phone: '+212 634567890' },
+    { id: '4', nom: 'Bennani', prenom: 'Youssef', role: 'USER', email: 'youssef.bennani@example.com', phone: '+212 645678901' },
+    { id: '5', nom: 'Ait', prenom: 'Fatima', role: 'USER', email: 'fatima.ait@example.com', phone: '+212 656789012' },
+    { id: '6', nom: 'Khalil', prenom: 'Omar', role: 'USER', email: 'omar.khalil@example.com', phone: '+212 667890123' },
+    { id: '7', nom: 'Zahraoui', prenom: 'Imane', role: 'USER', email: 'imane.zahraoui@example.com', phone: '+212 678901234' },
+    { id: '8', nom: 'Boukhris', prenom: 'Rachid', role: 'USER', email: 'rachid.boukhris@example.com', phone: '+212 689012345' }
+  ];
+
   constructor(private router: Router) {}
 
   // Sample data for development/demo
   ngOnInit(): void {
     this.availableCameras = [
-      { id: 'CAM001', cameraName: 'Entrance Cam', resolutionWidth: 1920, resolutionHeight: 1080, streamUrl: '', status: 'ACTIVE', icon: 'bi bi-camera-fill', isActive: true },
-      { id: 'CAM002', cameraName: 'Checkout Cam', resolutionWidth: 1920, resolutionHeight: 1080, streamUrl: '', status: 'INACTIVE', icon: 'bi bi-camera-fill', isActive: false },
-      { id: 'CAM003', cameraName: 'Aisle Cam', resolutionWidth: 1920, resolutionHeight: 1080, streamUrl: '', status: 'MAINTENANCE', icon: 'bi bi-camera-fill', isActive: false }
+      { id: 'CAM001', cameraName: 'Entrance', resolutionWidth: 1920, resolutionHeight: 1080, streamUrl: '', status: 'INACTIVE', icon: 'bi bi-camera-fill', isActive: true },
+      { id: 'CAM002', cameraName: 'Checkout', resolutionWidth: 1920, resolutionHeight: 1080, streamUrl: '', status: 'INACTIVE', icon: 'bi bi-camera-fill', isActive: false },
+      { id: 'CAM003', cameraName: 'Aisle', resolutionWidth: 1920, resolutionHeight: 1080, streamUrl: '', status: 'MAINTENANCE', icon: 'bi bi-camera-fill', isActive: false }
     ];
     this.zones = [
-      { id: 'ZONE001', zoneName: 'Entrance', zoneType: 'ENTRANCE', minDwellTime: 0, isActive: true, cameras: [], position: { x: 40, y: 40, width: 200, height: 120 }, color: '#e9ecef' },
-      { id: 'ZONE002', zoneName: 'Checkout', zoneType: 'CHECKOUT', minDwellTime: 0, isActive: true, cameras: [], position: { x: 300, y: 60, width: 200, height: 120 }, color: '#ffe0b2' },
+      { id: 'ZONE001', zoneName: 'Entrance', zoneType: 'ENTRANCE', minDwellTime: 0, isActive: false, cameras: [], position: { x: 40, y: 40, width: 200, height: 120 }, color: '#e9ecef' },
+      { id: 'ZONE002', zoneName: 'Checkout', zoneType: 'CHECKOUT', minDwellTime: 0, isActive: false, cameras: [], position: { x: 300, y: 60, width: 200, height: 120 }, color: '#ffe0b2' },
       { id: 'ZONE003', zoneName: 'Aisle', zoneType: 'PRODUCT', minDwellTime: 0, isActive: false, cameras: [], position: { x: 100, y: 250, width: 200, height: 120 }, color: '#c8e6c9' }
     ];
 
@@ -253,8 +267,9 @@ export class StoreComponent implements OnInit {
       isActive: true,
       cameras: [],
       position: { x: 10, y: 10, width: 200, height: 150 },
-      color: '#e9ecef'
-    };
+      color: '#e9ecef',
+      managerId: '' // Add managerId property for zone manager select
+    } as any;
     this.errorMessage = '';
   }
 
@@ -656,5 +671,10 @@ export class StoreComponent implements OnInit {
   goToAllStreams() {
     this.saveCameraZoneDataToLocalStorage();
     this.router.navigate(['/all-streams']);
+  }
+
+  // Returns true if all zones are inactive (or if there are no zones)
+  allZonesInactive(): boolean {
+    return this.zones.length > 0 && this.zones.every(z => !z.isActive);
   }
 }

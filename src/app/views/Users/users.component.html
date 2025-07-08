@@ -31,6 +31,11 @@
     <button class="btn btn-sm btn-outline-danger ms-3" (click)="fetchUsers()">Retry</button>
   </div>
 
+  <!-- Success message -->
+  <div *ngIf="showSuccessMsg" class="alert alert-success text-center" style="margin-top: 1rem;">
+    <i class="bi bi-check-circle me-2"></i> Saved successfully to database
+  </div>
+
   <!-- Card container for table -->
   <div *ngIf="!loading && !error" class="card shadow-sm mb-4">
     <div class="card-header" style="background-color: #5856d6; color: #fff;">User List</div>
@@ -102,8 +107,6 @@
           </a>
         </li>
         <li class="page-item active"><a class="page-link" href="#">1</a></li>
-        <li class="page-item"><a class="page-link" href="#">2</a></li>
-        <li class="page-item"><a class="page-link" href="#">3</a></li>
         <li class="page-item">
           <a class="page-link" href="#" aria-label="Next">
             <span aria-hidden="true">&raquo;</span>
@@ -155,7 +158,6 @@
               <label class="form-label">Role</label>
               <select class="form-select" formControlName="role" [disabled]="isViewMode">
                 <option value="ADMIN">Admin</option>
-                <option value="MODERATOR">Moderator</option>
                 <option value="USER">User</option>
               </select>
             </div>
@@ -231,7 +233,6 @@
               <label>Role</label>
               <select class="form-select" [(ngModel)]="newUser.role" name="role" required>
                 <option value="ADMIN">Admin</option>
-                <option value="MODERATOR">Moderator</option>
                 <option value="USER">User</option>
               </select>
             </div>
@@ -264,8 +265,7 @@
               <label>Permissions</label>
               <div class="form-check" *ngFor="let perm of permissionsList">
                 <input class="form-check-input" type="checkbox" [value]="perm"
-                  [checked]="newRolePermissions.includes(perm)"
-                  (change)="onPermissionCheckboxChange($event, perm)">
+                  [checked]="newRolePermissions.includes(perm)" (change)="onPermissionCheckboxChange($event, perm)">
                 <label class="form-check-label">{{ perm | titlecase }}</label>
               </div>
             </div>
@@ -321,15 +321,19 @@
               <ng-container *ngIf="editRoleIndex !== i; else editRoleTpl">
                 <span>{{ role }}</span>
                 <span>
-                  <button class="btn btn-sm btn-outline-info me-1" (click)="viewRolePermissionsDialog(role); closeViewRolesDialog()"><i class="bi bi-eye"></i></button>
-                  <button class="btn btn-sm btn-outline-warning me-1" (click)="startEditRole(i, role)"><i class="bi bi-pencil"></i></button>
-                  <button class="btn btn-sm btn-outline-danger" (click)="deleteRole(i)"><i class="bi bi-trash"></i></button>
+                  <button class="btn btn-sm btn-outline-info me-1"
+                    (click)="viewRolePermissionsDialog(role); closeViewRolesDialog()"><i class="bi bi-eye"></i></button>
+                  <button class="btn btn-sm btn-outline-warning me-1" (click)="startEditRole(i, role)"><i
+                      class="bi bi-pencil"></i></button>
+                  <button class="btn btn-sm btn-outline-danger" (click)="deleteRole(i)"><i
+                      class="bi bi-trash"></i></button>
                 </span>
               </ng-container>
               <ng-template #editRoleTpl>
                 <input type="text" class="form-control form-control-sm d-inline-block w-auto me-2"
                   [(ngModel)]="editRoleValue" style="width: 120px;">
-                <button class="btn btn-sm btn-success me-1" (click)="saveEditRole(i)"><i class="bi bi-check"></i></button>
+                <button class="btn btn-sm btn-success me-1" (click)="saveEditRole(i)"><i
+                    class="bi bi-check"></i></button>
                 <button class="btn btn-sm btn-secondary" (click)="cancelEditRole()"><i class="bi bi-x"></i></button>
               </ng-template>
             </li>

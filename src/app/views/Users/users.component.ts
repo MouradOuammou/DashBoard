@@ -45,7 +45,7 @@ export class UsersComponent implements OnInit {
   showAddRoleModal = false;
   showViewRolesModal = false;
   newRoleName = '';
-  roles: string[] = ['ADMIN', 'MODERATOR', 'USER'];
+  roles: string[] = ['ADMIN', 'USER'];
 
   // Définition des règles disponibles
   adminRules = [
@@ -66,14 +66,11 @@ export class UsersComponent implements OnInit {
 
   // Add a permissions list for roles
   permissionsList: string[] = [
-    'settings',
-    'store',
     'dashboard',
     'analytics',
+    'store',
     'users',
-    'products',
-    'orders',
-    'reports'
+    'settings'
   ];
 
   // Track permissions for new/edit role
@@ -83,6 +80,9 @@ export class UsersComponent implements OnInit {
   // Add state for the view permissions modal
   showViewRolePermissionsModal: boolean = false;
   selectedRoleName: string = '';
+
+  // Success message state
+  showSuccessMsg = false;
 
   constructor(
     private http: HttpClient,
@@ -123,7 +123,7 @@ export class UsersComponent implements OnInit {
           permissions: this.userRules
         },
         {
-          id: '3', nom: 'Walid', prenom: 'Karim', role: 'MODERATOR',
+          id: '3', nom: 'Walid', prenom: 'Karim', role: 'USER',
           email: 'karim.walid@example.com', phone: '+212 634567890',
           permissions: [...this.adminRules, ...this.userRules]
         },
@@ -192,10 +192,20 @@ export class UsersComponent implements OnInit {
     if (!this.newUser.nom || !this.newUser.prenom || !this.newUser.email || !this.newUser.phone || !this.newUser.role) {
       return;
     }
-    const newId = (this.nextId++).toString();
+    // Find the max numeric id in the current users list
+    const maxId = this.users.reduce((max, u) => {
+      const idNum = parseInt(u.id, 10);
+      return !isNaN(idNum) && idNum > max ? idNum : max;
+    }, 0);
+    const newId = (maxId + 1).toString();
     const user: User = { ...this.newUser, id: newId };
     this.users.push(user);
     this.closeAddUserModal();
+    // Show success message with delay
+    setTimeout(() => {
+      this.showSuccessMsg = true;
+      setTimeout(() => this.showSuccessMsg = false, 2500);
+    }, 400);
   }
 
   // Unified modal logic
@@ -494,8 +504,6 @@ closeDropdown(): void {
     // For demo, assign some permissions based on role name (customize as needed)
     if (role === 'ADMIN') {
       this.viewRolePermissions = [...this.permissionsList];
-    } else if (role === 'MODERATOR') {
-      this.viewRolePermissions = ['dashboard', 'analytics', 'users'];
     } else if (role === 'USER') {
       this.viewRolePermissions = ['dashboard', 'store'];
     } else {

@@ -30,7 +30,6 @@
         <button class="btn btn-link btn-sm px-1 py-0 ms-1" (click)="camera.showMenu = !camera.showMenu" type="button"
           tabindex="-1" [attr.data-camera-menu-btn-id]="camera.id">
           <i class="bi bi-three-dots-vertical"></i>
-          <span style="font-size: 1.2em; vertical-align: middle;">&#8942;</span>
         </button>
         <!-- Options menu -->
         <div class="camera-options-menu dropdown-menu show" *ngIf="camera.showMenu"
@@ -67,7 +66,6 @@
           <button class="btn btn-link btn-sm px-1 py-0 ms-1" (click)="zone.showMenu = !zone.showMenu" type="button"
             tabindex="-1" [attr.data-zone-menu-btn-id]="zone.id">
             <i class="bi bi-three-dots-vertical"></i>
-            <span style="font-size: 1.2em; vertical-align: middle;">&#8942;</span>
           </button>
           <!-- Options menu -->
           <div class="zone-options-menu dropdown-menu show" *ngIf="zone.showMenu" [attr.data-zone-menu-id]="zone.id"
@@ -87,7 +85,6 @@
           <button class="btn btn-link btn-sm px-1 py-0 ms-1" (click)="zone.showMenu = !zone.showMenu" type="button"
             tabindex="-1" [attr.data-zone-menu-btn-id]="zone.id" style="opacity: 1; pointer-events: auto;">
             <i class="bi bi-three-dots-vertical"></i>
-            <span style="font-size: 1.2em; vertical-align: middle;">&#8942;</span>
           </button>
           <!-- Options menu -->
           <div class="zone-options-menu dropdown-menu show" *ngIf="zone.showMenu" [attr.data-zone-menu-id]="zone.id"
@@ -148,9 +145,10 @@
       </ng-container>
 
       <!-- Empty state message -->
-      <div class="initial-message text-center" *ngIf="zones.length === 0">
-        <i class="fas fa-map-marked-alt"></i>
-        <h3>Start Building Your Map</h3>
+      <div class="initial-message text-center d-flex flex-column justify-content-center align-items-center w-100 h-100"
+        *ngIf="zones.length === 0 || allZonesInactive()">
+        <i class="fas fa-map-marked-alt" style="font-size: 2.5rem;"></i>
+        <h3 class="mt-2">Start Building Your Map</h3>
         <p>Add zones to organize your cameras</p>
       </div>
     </div>
@@ -241,6 +239,13 @@
             <input type="number" class="form-control" [(ngModel)]="newZone.minDwellTime" name="minDwellTime" required>
           </div>
           <div class="form-group mb-2">
+            <label>Zone Manager</label>
+            <select class="form-select" [(ngModel)]="newZone.managerId" name="managerId" required>
+              <option value="" disabled selected>Select a manager</option>
+              <option *ngFor="let user of sampleUsers" [value]="user.id">{{ user.prenom }} {{ user.nom }}</option>
+            </select>
+          </div>
+          <div class="form-group mb-2">
             <label>Active</label>
             <input type="checkbox" class="form-check-input" [(ngModel)]="newZone.isActive" name="isActive">
           </div>
@@ -248,6 +253,7 @@
             <label>Color</label>
             <input type="color" class="form-control form-control-color" [(ngModel)]="newZone.color" name="color">
           </div>
+
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" (click)="closeZoneDialog()">Cancel</button>
             <button type="submit" class="btn btn-primary">Add Zone</button>

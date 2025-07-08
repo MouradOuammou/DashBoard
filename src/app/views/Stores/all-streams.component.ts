@@ -341,6 +341,10 @@ export class AllStreamsComponent {
 
   // Toggle view for zone mask overlays (show/hide on repeated clicks)
   toggleViewZoneMask(camera: Camera) {
+    if (!camera.streamUrl) {
+      alert('No stream URL set for this camera.');
+      return;
+    }
     // Only hide overlays if not in edit mode (not drawing, not saving, not selecting zone)
     const isViewingOnly = this.editModeCameraId === camera.id && this.drawingPoints.length === 0 && !this.isSaveMode && !this.showZoneSelect;
     if (isViewingOnly) {

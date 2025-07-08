@@ -5,14 +5,14 @@ export const navItems: INavData[] = [
     name: 'Dashboard',
     url: '/dashboard',
     iconComponent: { name: 'cil-speedometer' },
-    badge: {
-      color: 'info',
-      text: 'NEW'
-    }
+    // badge: {
+    //   color: 'info',
+    //   text: 'NEW'
+    // }
   },
   {
     name: 'Analytics',
-    iconComponent: { name: 'cil-graph' },
+    iconComponent: { name: 'cil-chart' },
     children: [
       {
         name: 'Traffic Insights',
@@ -63,34 +63,10 @@ export const navItems: INavData[] = [
     iconComponent: { name: 'cil-settings' },
     url: '/Settings'
   },
+
   {
-    title: true,
-    name: 'Extras'
-  },
-  {
-    name: 'Pages',
-    iconComponent: { name: 'cil-description' },
-    children: [
-      {
-        name: 'Login',
-        url: '/login',
-        iconComponent: { name: 'cil-account-logout' }
-      },
-      {
-        name: 'Register',
-        url: '/register',
-        iconComponent: { name: 'cil-user-plus' }
-      },
-      {
-        name: 'Error 404',
-        url: '/404',
-        iconComponent: { name: 'cil-x-circle' }
-      },
-      {
-        name: 'Error 500',
-        url: '/500',
-        iconComponent: { name: 'cil-bug' }
-      }
-    ]
+    name: 'Logout',
+    url: '/logout',
+    iconComponent: { name: 'cil-account-logout' }
   },
 ];

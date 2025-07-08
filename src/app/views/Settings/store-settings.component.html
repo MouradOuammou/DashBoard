@@ -5,6 +5,11 @@
     <p class="mt-2">Loading settings...</p>
 </div>
 
+<!-- Success message -->
+<div *ngIf="showSuccessMsg" class="alert alert-success text-center" style="margin-bottom: 1rem;">
+    <i class="bi bi-check-circle me-2"></i> Saved successfully to database
+</div>
+
 <div class="card mb-4">
     <div class="card-header" style="background-color: #5856d6; color: #fff;">Store Settings</div>
     <div class="card-body">
@@ -12,7 +17,7 @@
             <div class="row mb-3">
                 <div class="col-md-4">
                     <label for="storeName" class="form-label">Store Name</label>
-                    <input type="text" class="form-control" id="storeName" placeholder="Enter store name">
+                    <input type="text" class="form-control" value="store01"  id="storeName" placeholder="Enter store name">
                 </div>
                 <div class="col-md-4">
                     <label for="timezone" class="form-label">Timezone</label>
@@ -32,7 +37,8 @@
                     <input type="file" class="form-control" id="floorPlanUrl" accept="image/*">
                 </div>
             </div>
-            <button type="button" class="btn" style="background-color: #5856d6; color: #fff;">Save</button>
+            <button type="button" class="btn" style="background-color: #5856d6; color: #fff;"
+                (click)="onSaveStoreSettings()">Save</button>
         </form>
     </div>
 </div>
@@ -64,7 +70,8 @@
                     </tbody>
                 </table>
             </div>
-            <button type="button" class="btn mt-3" style="background-color: #5856d6; color: #fff;">Save</button>
+            <button type="button" class="btn mt-3" style="background-color: #5856d6; color: #fff;"
+                (click)="onSaveBusinessHours()">Save</button>
         </form>
     </div>
 </div>

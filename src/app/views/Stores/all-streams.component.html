@@ -22,12 +22,15 @@
                             Zones: {{ getZoneNamesForCamera(camera.id) }}
                         </div>
                     </div>
-                    <div class="stream-header-actions">
-                        <button class="btn btn-outline-primary btn-sm" (click)="defineZoneCoordinates(camera)">Define
-                            Zone Mask</button>
-                        <button class="btn btn-outline-info btn-sm" (click)="toggleViewZoneMask(camera)">View Zone
-                            Mask</button>
-                    </div>
+                    @if (camera.streamUrl) {
+                        <div class="stream-header-actions">
+                            <button class="btn btn-outline-primary btn-sm" (click)="defineZoneCoordinates(camera)">Define
+                                Zone Mask</button>
+                            <button class="btn btn-outline-info btn-sm" (click)="toggleViewZoneMask(camera)">View Zone
+                                Mask</button>
+                            </div>
+                    }
+
                 </div>
                 <div class="stream-body" [ngClass]="{
                   'show-rec': camera.streamUrl && !camera.streamError,

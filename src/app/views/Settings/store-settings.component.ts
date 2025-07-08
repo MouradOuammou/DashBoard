@@ -1,14 +1,15 @@
 import { Component } from '@angular/core';
 // @ts-ignore
 import timezones from './timezones.json';
-import {NgForOf} from "@angular/common";
+import {NgForOf, NgIf} from "@angular/common";
 
 @Component({
   selector: 'app-store-settings',
   templateUrl: './store-settings.component.html',
   standalone: true,
   imports: [
-    NgForOf
+    NgForOf,
+    NgIf
   ],
   styleUrls: ['./store-settings.component.scss']
 })
@@ -27,6 +28,8 @@ export class StoreSettingsComponent {
     { day: 'Sunday', status: 'open', from: '08:00', to: '22:00' },
   ];
   timezones: any[] = (timezones as any[]);
+  showSuccessMsg: boolean = false;
+  loading: boolean = false;
 
   constructor() {
     this.generateTimeOptions();
@@ -41,5 +44,23 @@ export class StoreSettingsComponent {
         this.timeOptions.push(`${hour}:${min}`);
       }
     }
+  }
+
+  // Simulate save for Store Settings
+  onSaveStoreSettings() {
+    // ...simulate save logic...
+    this.showSuccessMsg = true;
+    setTimeout(() => {
+      this.showSuccessMsg = false;
+    }, 2000);
+  }
+
+  // Simulate save for Business Hours
+  onSaveBusinessHours() {
+    // ...simulate save logic...
+    this.showSuccessMsg = true;
+    setTimeout(() => {
+      this.showSuccessMsg = false;
+    }, 2000);
   }
 }
